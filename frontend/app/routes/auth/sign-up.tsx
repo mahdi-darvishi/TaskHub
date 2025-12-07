@@ -21,8 +21,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router";
 import { z } from "zod";
+import { useSignUpMutation } from "@/hooks/use-auth";
+import { toast } from "sonner";
 
-type SignupFormData = z.infer<typeof signUpSchema>;
+export type SignupFormData = z.infer<typeof signUpSchema>;
 const SignUp = () => {
   const form = useForm<SignupFormData>({
     resolver: zodResolver(signUpSchema),
@@ -34,8 +36,19 @@ const SignUp = () => {
     },
   });
 
+  const { mutate, isPending } = useSignUpMutation();
+
   const handleSubmit = (values: SignupFormData) => {
-    console.log(values);
+    mutate(values, {
+      onSuccess: () => {
+        toast.success("Account created successfully");
+      },
+      onError: (error: any) => {
+        const ErrorMessage =
+          error.response?.data?.error?.message || "Something went wrong";
+        toast.error(ErrorMessage);
+      },
+    });
   };
   return (
     <div className=" min-w-md min-h-screen flex flex-col items-center justify-center bg-muted/40 p-4">
@@ -124,7 +137,7 @@ const SignUp = () => {
                 )}
               />
 
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full" disabled={isPending}>
                 Sign in
               </Button>
             </form>
