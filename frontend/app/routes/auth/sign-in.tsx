@@ -38,7 +38,7 @@ const SignIn = () => {
   return (
     <div className=" min-w-md min-h-screen flex flex-col items-center justify-center bg-muted/40 p-4">
       <Card className="w-full shadow-xl">
-        <CardHeader>
+        <CardHeader className="text-center mb-5">
           <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
           <CardDescription className="text-sm text-muted-foreground">
             Sign in to your account to continue
@@ -73,7 +73,15 @@ const SignIn = () => {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <div className="flex items-center justify-between">
+                      <FormLabel>Password</FormLabel>
+                      <Link
+                        to="/forgot-password"
+                        className="text-sm text-blue-600"
+                      >
+                        Forogt Password?
+                      </Link>
+                    </div>
                     <FormControl>
                       <Input
                         type="password"
@@ -92,7 +100,7 @@ const SignIn = () => {
             </form>
           </Form>
 
-          <CardFooter className="flex items-center justify-center mt-2">
+          <CardFooter className="flex items-center justify-center mt-6">
             <div>
               <p className=" text-sm text-muted-foreground">
                 Don&apos;t have an account? <Link to="/sign-up"> Sign up</Link>
