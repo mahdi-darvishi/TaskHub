@@ -41,7 +41,7 @@ const SignIn = () => {
         <CardHeader className="text-center mb-5">
           <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
           <CardDescription className="text-sm text-muted-foreground">
-            Sign in to your account to continue
+            sign in to your account to continue
           </CardDescription>
         </CardHeader>
 
