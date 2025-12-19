@@ -19,13 +19,16 @@ import { Input } from "@/components/ui/input";
 import { signUpSchema } from "@/lib/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { z } from "zod";
 import { useSignUpMutation } from "@/hooks/use-auth";
 import { toast } from "sonner";
 
 export type SignupFormData = z.infer<typeof signUpSchema>;
+
 const SignUp = () => {
+  const navigate = useNavigate();
+
   const form = useForm<SignupFormData>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
@@ -41,15 +44,22 @@ const SignUp = () => {
   const handleSubmit = (values: SignupFormData) => {
     mutate(values, {
       onSuccess: () => {
-        toast.success("Account created successfully");
+        // 3. Updated Message: Inform user to check email
+        toast.success(
+          "Account created! Please check your email to verify your account."
+        );
+
+        // 4. Redirect to Sign In page so they are ready to login
+        navigate("/sign-in");
       },
       onError: (error: any) => {
         const ErrorMessage =
-          error.response?.data?.error?.message || "Something went wrong";
+          error.response?.data?.message || "Something went wrong";
         toast.error(ErrorMessage);
       },
     });
   };
+
   return (
     <div className=" min-w-md min-h-screen flex flex-col items-center justify-center bg-muted/40 p-4">
       <Card className="w-full shadow-xl">
@@ -58,7 +68,7 @@ const SignUp = () => {
             Create an account
           </CardTitle>
           <CardDescription className="text-sm text-muted-foreground">
-            create an account to continue
+            Enter your details to create an account
           </CardDescription>
         </CardHeader>
 
@@ -77,7 +87,7 @@ const SignUp = () => {
                     <FormControl>
                       <Input
                         type="email"
-                        placeholder="email@example.come"
+                        placeholder="email@example.com"
                         {...field}
                       />
                     </FormControl>
@@ -138,7 +148,7 @@ const SignUp = () => {
               />
 
               <Button type="submit" className="w-full" disabled={isPending}>
-                Sign in
+                {isPending ? "Creating Account..." : "Sign up"}
               </Button>
             </form>
           </Form>
