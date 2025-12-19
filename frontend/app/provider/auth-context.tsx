@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { queryClient } from "./react-query-provider";
 import { useLocation, useNavigate } from "react-router";
 import { publicRoutes } from "@/lib";
+import Cookies from "js-cookie";
 
 interface AuthContextType {
   user: User | null;
@@ -28,9 +29,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const checkAuth = async () => {
       setIsLoading(true);
       try {
-        const storedUser = localStorage.getItem("user");
+        const token = Cookies.get("token");
+        const storedUser = Cookies.get("user");
 
-        if (storedUser) {
+        if (token && storedUser) {
           setUser(JSON.parse(storedUser));
           setIsAuthenticated(true);
         } else {
@@ -42,6 +44,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       } catch (error) {
         console.error("Auth check failed:", error);
+        logout();
       } finally {
         setIsLoading(false);
       }
@@ -60,19 +63,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const login = async (data: any) => {
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user));
+    Cookies.set("token", data.token, {
+      expires: 7,
+      secure: true,
+      sameSite: "Strict",
+    });
+
+    Cookies.set("user", JSON.stringify(data.user), {
+      expires: 7,
+      secure: true,
+      sameSite: "Strict",
+    });
 
     setUser(data.user);
     setIsAuthenticated(true);
   };
 
   const logout = async () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    Cookies.remove("token");
+    Cookies.remove("user");
 
     setUser(null);
     setIsAuthenticated(false);
+    navigate("/sign-in");
 
     queryClient.clear();
   };
