@@ -13,13 +13,18 @@ const userSchema = new Schema(
     name: { type: String, required: true, trim: true },
     profilePicture: { type: String },
     isEmailVerified: { type: Boolean, default: false },
+    verificationToken: { type: String, select: false },
+    verificationTokenExpires: { type: Date, select: false },
     lastLogin: { type: Date },
     is2FAEnabled: { type: Boolean, default: false },
     twoFAOtp: { type: String, select: false },
     twoFAOtpExpires: { type: Date, select: false },
+    resetPasswordToken: { type: String, select: false },
+    resetPasswordExpires: { type: Date, select: false },
   },
   { timestamps: true }
 );
+
 const User = mongoose.model("User", userSchema);
 
 export default User;

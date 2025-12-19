@@ -6,6 +6,7 @@ import {
 } from "@react-router/dev/routes";
 
 export default [
+  // بخش Auth (همانطور که بود)
   layout("routes/auth/auth-layout.tsx", [
     index("routes/root/home.tsx"),
     route("sign-in", "routes/auth/sign-in.tsx"),
@@ -13,5 +14,9 @@ export default [
     route("forgot-password", "routes/auth/forgot-password.tsx"),
     route("reset-password", "routes/auth/reset-password.tsx"),
     route("verify-email", "routes/auth/verify-email.tsx"),
+  ]),
+
+  route("dashboard", "routes/dashboard/dashboard-layout.tsx", [
+    index("routes/dashboard/index.tsx"),
   ]),
 ] satisfies RouteConfig;
