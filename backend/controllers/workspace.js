@@ -33,7 +33,7 @@ const getWorkspaces = async (req, res) => {
       "members.user": req.user._id,
     }).sort({ createdAt: -1 });
 
-    res.status(200).json({ workspaces });
+    res.status(200).json(workspaces);
   } catch (error) {
     console.log(error);
     res
