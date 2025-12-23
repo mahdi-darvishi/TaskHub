@@ -27,4 +27,16 @@ const resetPasswordSchema = z
     message: "Passwords do not match",
   });
 
-export { registerSchema, loginSchema, emailSchema, resetPasswordSchema };
+const WorkspaceSchema = z.object({
+  name: z.string().min(3, "Name is required"),
+  description: z.string().optional(),
+  color: z.string().optional(),
+});
+
+export {
+  registerSchema,
+  loginSchema,
+  emailSchema,
+  resetPasswordSchema,
+  WorkspaceSchema,
+};
