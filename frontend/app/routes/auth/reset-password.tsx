@@ -99,7 +99,7 @@ const ResetPassword = () => {
                           <Input
                             {...field}
                             type="password"
-                            placeholder="Enter your email"
+                            placeholder="Enter your new password"
                           />
                         </FormControl>
                         <FormMessage />
@@ -116,7 +116,7 @@ const ResetPassword = () => {
                           <Input
                             {...field}
                             type="password"
-                            placeholder="Enter your email"
+                            placeholder="Enter your new password"
                           />
                         </FormControl>
                         <FormMessage />
