@@ -1,11 +1,19 @@
-import { Schema, model } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
 const workspaceModel = new Schema(
   {
-    name: { type: String, required: true },
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
     description: { type: String, trim: true },
-    color: { type: String, default: "#ff5733", required: true },
-    owner: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    color: { type: String, default: "#FF5733" },
+    owner: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
     members: [
       {
         user: { type: Schema.Types.ObjectId, ref: "User" },
@@ -21,6 +29,8 @@ const workspaceModel = new Schema(
   },
   { timestamps: true }
 );
-const Workspace = model("Workspace", workspaceModel);
+
+const Workspace =
+  mongoose.models.Workspace || mongoose.model("Workspace", workspaceModel);
 
 export default Workspace;
