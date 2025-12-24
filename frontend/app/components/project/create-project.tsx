@@ -1,8 +1,8 @@
 import { projectSchema } from "@/lib/schema";
-import { ProjectStatus, type MemberProps } from "@/types/indedx";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import type z from "zod";
+import { z } from "zod";
 import {
   Dialog,
   DialogContent,
@@ -19,8 +19,8 @@ import {
   FormLabel,
   FormMessage,
 } from "../ui/form";
-import { Textarea } from "../ui/textarea";
 import { Input } from "../ui/input";
+import { Textarea } from "../ui/textarea";
 import {
   Select,
   SelectContent,
@@ -30,10 +30,14 @@ import {
 } from "../ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Button } from "../ui/button";
-import { Calendar as CalendarIcon } from "lucide-react";
+
 import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
 import { Calendar } from "../ui/calendar";
 import { Checkbox } from "../ui/checkbox";
+import { useCreateProject } from "@/hooks/use-project";
+import { toast } from "sonner";
+import { ProjectStatus, type MemberProps } from "@/types/indedx";
 
 interface CreateProjectDialogProps {
   isOpen: boolean;
@@ -42,15 +46,15 @@ interface CreateProjectDialogProps {
   workspaceMembers: MemberProps[];
 }
 
-export type createProjectFormData = z.infer<typeof projectSchema>;
+export type CreateProjectFormData = z.infer<typeof projectSchema>;
 
-const CreateProjectDialog = ({
+export const CreateProjectDialog = ({
   isOpen,
   onOpenChange,
   workspaceId,
   workspaceMembers,
 }: CreateProjectDialogProps) => {
-  const form = useForm<createProjectFormData>({
+  const form = useForm<CreateProjectFormData>({
     resolver: zodResolver(projectSchema),
     defaultValues: {
       title: "",
@@ -62,15 +66,34 @@ const CreateProjectDialog = ({
       tags: undefined,
     },
   });
+  const { mutate, isPending } = useCreateProject();
 
-  const onSubmit = (data: createProjectFormData) => {
-    console.log(data);
+  const onSubmit = (values: CreateProjectFormData) => {
+    if (!workspaceId) return;
+
+    mutate(
+      {
+        projectData: values,
+        workspaceId,
+      },
+      {
+        onSuccess: () => {
+          toast.success("Project created successfully");
+          form.reset();
+          onOpenChange(false);
+        },
+        onError: (error: any) => {
+          const errorMessage = error.response.data.message;
+          toast.error(errorMessage);
+          console.log(error);
+        },
+      }
+    );
   };
 
-  const isPending = false;
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[540px]">
+      <DialogContent className="sm:max-w-[720px]">
         <DialogHeader>
           <DialogTitle>Create Project</DialogTitle>
           <DialogDescription>
@@ -136,7 +159,7 @@ const CreateProjectDialog = ({
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="startDate"
@@ -271,7 +294,7 @@ const CreateProjectDialog = ({
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent
-                          className="w-full max-w-60 overflow-y-auto"
+                          className="w-full max-w-96 overflow-y-auto"
                           align="start"
                         >
                           <div className="flex flex-col gap-2">
@@ -283,7 +306,7 @@ const CreateProjectDialog = ({
                               return (
                                 <div
                                   key={member._id}
-                                  className="flex items-center gap-2 p-2 border rounded"
+                                  className="flex items-center gap-2 p-2 border rounded "
                                 >
                                   <Checkbox
                                     checked={!!selectedMember}
@@ -369,5 +392,3 @@ const CreateProjectDialog = ({
     </Dialog>
   );
 };
-
-export default CreateProjectDialog;

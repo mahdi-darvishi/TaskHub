@@ -1,13 +1,13 @@
-import type { createProjectFormData } from "@/components/project/create-project";
+import type { CreateProjectFormData } from "@/components/project/create-project";
 import { fetchData, postData } from "@/lib/fetch-util";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-export const UseCreateProject = () => {
+export const useCreateProject = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (data: {
-      projectData: createProjectFormData;
+      projectData: CreateProjectFormData;
       workspaceId: string;
     }) =>
       postData(
