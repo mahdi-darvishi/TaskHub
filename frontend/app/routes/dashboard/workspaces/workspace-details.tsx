@@ -40,10 +40,10 @@ const WorkspaceDetails = () => {
       />
 
       <CreateProjectDialog
-      // isOpen={isCreateProject}
-      // onOpenChange={setIsCreateProject}
-      // workspaceId={workspaceId}
-      // workspaceMembers={data.workspace.members as any}
+        isOpen={isCreateProject}
+        onOpenChange={setIsCreateProject}
+        workspaceId={workspaceId}
+        workspaceMembers={data.workspace.members as any}
       />
 
       {/* <InviteMemberDialog
