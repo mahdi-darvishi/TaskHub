@@ -24,23 +24,26 @@ const SidebarNav = ({
 }: SidebarNavProps) => {
   const location = useLocation();
   const navigate = useNavigate();
+
   return (
     <nav className={cn("flex flex-col gap-y-2", className)} {...props}>
       {items.map((item) => {
         const Icon = item.icon;
+
         const isActive = location.pathname === item.href;
+
         const handleOnClick = () => {
-          if (item.href === "/dashboard") {
-            navigate(item.href);
-          } else if (currentWorkspace?._id) {
+          if (item.href === "/dashboard" && currentWorkspace) {
             navigate(`${item.href}?workspaceId=${currentWorkspace._id}`);
+            return;
           } else {
             navigate(item.href);
           }
         };
+
         return (
           <Button
-            key={item.href}
+            key={item.title}
             variant={isActive ? "outline" : "ghost"}
             className={cn(
               "justify-start",

@@ -103,14 +103,16 @@ const SidebarComponenet = ({
         />
       </ScrollArea>
 
-      <div className="">
+      <div
+        className={`${isCollapsed ? "flex items-center justify-center" : ""}  `}
+      >
         <Button
           variant="ghost"
           size={isCollapsed ? "icon" : "default"}
           onClick={logout}
         >
           <LogOut className={cn("size-4", isCollapsed && "mr-2")} />
-          <span className="hidden md:block">Logout</span>
+          {isCollapsed ? "" : <span className="hidden md:block">Logout</span>}
         </Button>
       </div>
     </div>

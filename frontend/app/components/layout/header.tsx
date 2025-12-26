@@ -30,19 +30,9 @@ export const Header = ({
 
   const { user, logout } = useAuth();
   const { workspaces } = useLoaderData() as { workspaces: Workspace[] };
-  const isOnWorkspacePage = useLocation().pathname.includes("/workspace");
 
   const handleOnClick = (workspace: Workspace) => {
-    onWorkspaceSelected(workspace);
-    const location = window.location;
-
-    if (isOnWorkspacePage) {
-      navigate(`/workspaces/${workspace._id}`);
-    } else {
-      const basePath = location.pathname;
-
-      navigate(`${basePath}?workspaceId=${workspace._id}`);
-    }
+    navigate(`/dashboard?workspaceId=${workspace._id}`);
   };
 
   return (

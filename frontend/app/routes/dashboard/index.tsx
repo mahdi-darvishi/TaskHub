@@ -3,6 +3,7 @@ import { StatisticsCharts } from "@/components/dashboard/statistics-charts";
 import StatsCard from "@/components/dashboard/stats-card";
 import Loader from "@/components/loader";
 import { UpcomingTasks } from "@/components/upcoming-tasks";
+import WorkspaceAvatar from "@/components/workspace/workspace-avatar";
 import { useGetWorkspaceStatsQuery } from "@/hooks/use-workspace";
 import type {
   Project,
@@ -13,6 +14,7 @@ import type {
   TaskTrendsData,
   WorkspaceProductivityData,
 } from "@/types/indedx";
+import { da } from "date-fns/locale";
 import { useSearchParams } from "react-router";
 
 const Dashboard = () => {
@@ -32,6 +34,8 @@ const Dashboard = () => {
     isPending: boolean;
   };
 
+  console.log(data);
+
   if (isPending || !workspaceId) {
     return (
       <div>
@@ -39,10 +43,12 @@ const Dashboard = () => {
       </div>
     );
   }
+
   return (
-    <div className="space-y-8 2xl:space-y-12">
+    <div className="space-y-8 2xl:space-y-12 pb-10">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Dashboard</h1>
+        <p>TEST</p>
       </div>
 
       <StatsCard data={data.stats} />
