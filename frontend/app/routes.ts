@@ -19,6 +19,12 @@ export default [
   // --- Dashboard Section ---
   layout("routes/dashboard/dashboard-layout.tsx", [
     route("dashboard", "routes/dashboard/index.tsx"),
+
+    route("my-tasks", "routes/dashboard/my-tasks/index.tsx"),
+    route("members", "routes/dashboard/members/index.tsx"),
+    route("achieved", "routes/dashboard/achieved/index.tsx"),
+    route("settings", "routes/dashboard/settings/index.tsx"),
+
     route("workspaces", "routes/dashboard/workspaces/index.tsx"),
     route(
       "workspaces/:workspaceId",
@@ -28,16 +34,14 @@ export default [
       "workspaces/:workspaceId/projects/:projectId",
       "routes/dashboard/project/project-details.tsx"
     ),
-
     route(
       "workspaces/:workspaceId/projects/:projectId/tasks/:taskId",
       "routes/dashboard/task/task-details.tsx"
     ),
   ]),
 
-  // --- User Profile Section (New) ---
+  // --- User Section ---
   layout("routes/user/user-layout.tsx", [
-    // این مسیر باعث میشه آدرس http://localhost:5173/user/profile کار کنه
     route("user/profile", "routes/user/profile.tsx"),
   ]),
 ] satisfies RouteConfig;
