@@ -80,7 +80,10 @@ export const TaskAssigneesSelector = ({
                 className="flex items-center bg-gray-100 rounded px-2 py-1"
               >
                 <Avatar className="size-6 mr-1">
-                  <AvatarImage src={m.user.profilePicture} />
+                  <AvatarImage
+                    className="object-cover"
+                    src={m.user.profilePicture}
+                  />
                   <AvatarFallback>{m.user.name.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <span className="text-xs text-muted-foreground">

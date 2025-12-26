@@ -29,6 +29,7 @@ export const Header = ({
   const navigate = useNavigate();
 
   const { user, logout } = useAuth();
+
   const { workspaces } = useLoaderData() as { workspaces: Workspace[] };
 
   const handleOnClick = (workspace: Workspace) => {
@@ -96,7 +97,11 @@ export const Header = ({
             >
               <button className="rounded-full border p-1 w-8 h-8">
                 <Avatar className="w-8 h-8">
-                  <AvatarImage src={user?.profilePicture} alt={user?.name} />
+                  <AvatarImage
+                    className="object-cover"
+                    src={user?.profilePicture}
+                    alt={user?.name}
+                  />
                   <AvatarFallback className="bg-primary text-primary-foreground">
                     {user?.name?.charAt(0).toUpperCase()}
                   </AvatarFallback>

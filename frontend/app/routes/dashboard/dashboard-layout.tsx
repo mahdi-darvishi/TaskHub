@@ -68,18 +68,18 @@ const DashboardLayout = () => {
   };
 
   return (
-    <div className="flex h-screen w-full">
+    <div className="flex w-full min-h-screen bg-background">
       <SidebarComponenet currentWorkspace={currentWorkspace} />
 
-      <div className="flex flex-1 flex-col h-full">
+      <div className="flex flex-1 flex-col min-w-0">
         <Header
           onWorkspaceSelected={handleWorkspaceSelected}
           selectedWorkspace={currentWorkspace}
           onCreateWorkspace={() => setIsCreatingWorkspace(true)}
         />
 
-        <main className="flex-1 overflow-y-auto h-full w-full">
-          <div className="mx-auto container px-2 sm:px-6 lg:px-8 py-0 md:py-8 w-full h-full">
+        <main className="flex-1 w-full">
+          <div className="mx-auto container px-2 sm:px-6 lg:px-8 py-8">
             <Outlet context={{ currentWorkspace }} />
           </div>
         </main>

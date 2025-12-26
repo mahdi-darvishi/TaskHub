@@ -2,8 +2,8 @@ import { RecentProjects } from "@/components/dashboard/recnt-projects";
 import { StatisticsCharts } from "@/components/dashboard/statistics-charts";
 import StatsCard from "@/components/dashboard/stats-card";
 import Loader from "@/components/loader";
+import { NoDataFound } from "@/components/no-data-found";
 import { UpcomingTasks } from "@/components/upcoming-tasks";
-import WorkspaceAvatar from "@/components/workspace/workspace-avatar";
 import { useGetWorkspaceStatsQuery } from "@/hooks/use-workspace";
 import type {
   Project,
@@ -14,12 +14,27 @@ import type {
   TaskTrendsData,
   WorkspaceProductivityData,
 } from "@/types/indedx";
-import { da } from "date-fns/locale";
-import { useSearchParams } from "react-router";
+import { Briefcase } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router";
 
 const Dashboard = () => {
   const [searchParams] = useSearchParams();
   const workspaceId = searchParams.get("workspaceId");
+  const navigate = useNavigate();
+
+  if (!workspaceId) {
+    return (
+      <div className="p-6 h-full flex flex-col">
+        <NoDataFound
+          title="No Workspace Selected"
+          description="You currently don't have an active workspace. To manage projects and tasks, please select an existing workspace or create a new one."
+          buttonText="Go to Workspaces"
+          buttonAction={() => navigate("/workspaces")}
+          icon={Briefcase}
+        />
+      </div>
+    );
+  }
 
   const { data, isPending } = useGetWorkspaceStatsQuery(workspaceId!) as {
     data: {
@@ -34,9 +49,7 @@ const Dashboard = () => {
     isPending: boolean;
   };
 
-  console.log(data);
-
-  if (isPending || !workspaceId) {
+  if (isPending) {
     return (
       <div>
         <Loader />
@@ -48,7 +61,11 @@ const Dashboard = () => {
     <div className="space-y-8 2xl:space-y-12 pb-10">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Dashboard</h1>
-        <p>TEST</p>
+        <p>
+          {data.workspaceProductivityData.map((item) => (
+            <p key={item.name}>{item.name}</p>
+          ))}
+        </p>
       </div>
 
       <StatsCard data={data.stats} />

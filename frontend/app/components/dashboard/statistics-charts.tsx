@@ -31,6 +31,7 @@ import {
   PieChart,
   XAxis,
   YAxis,
+  ResponsiveContainer,
 } from "recharts";
 
 interface StatisticsChartsProps {
@@ -50,7 +51,8 @@ export const StatisticsCharts = ({
 }: StatisticsChartsProps) => {
   return (
     <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mb-8">
-      <Card className="lg:col-span-2">
+      {/* --- Task Trends Chart --- */}
+      <Card className="lg:col-span-2 col-span-1">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <div className="space-y-0.5">
             <CardTitle className="text-base font-medium">Task Trends</CardTitle>
@@ -58,23 +60,27 @@ export const StatisticsCharts = ({
           </div>
           <ChartLine className="size-5 text-muted-foreground" />
         </CardHeader>
-        <CardContent className="w-full overflow-x-auto md:overflow-x-hidden">
-          <div className="min-w-[350px]">
+        <CardContent>
+          <div className="w-full h-[300px] min-w-0">
             <ChartContainer
-              className="h-[300px]"
+              className="h-full w-full"
               config={{
-                completed: { color: "#10b981" }, // green
-                inProgress: { color: "#f59e0b" }, // blue
-                todo: { color: "#3b82f6" }, // gray
+                completed: { color: "#10b981" },
+                inProgress: { color: "#f59e0b" },
+                todo: { color: "#3b82f6" },
               }}
             >
-              <LineChart data={taskTrendsData}>
+              <LineChart
+                data={taskTrendsData}
+                margin={{ top: 5, right: 10, left: -20, bottom: 0 }}
+              >
                 <XAxis
-                  dataKey={"name"}
+                  dataKey="name"
                   stroke="#888888"
                   fontSize={12}
                   tickLine={false}
                   axisLine={false}
+                  padding={{ left: 10, right: 10 }}
                 />
                 <YAxis
                   stroke="#888888"
@@ -82,13 +88,11 @@ export const StatisticsCharts = ({
                   tickLine={false}
                   axisLine={false}
                 />
-
-                <CartesianGrid strokeDasharray={"3 3"} vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
                 <ChartTooltip />
-
                 <Line
                   type="monotone"
-                  dataKey={"completed"}
+                  dataKey="completed"
                   stroke="#10b981"
                   strokeWidth={2}
                   dot={{ r: 4 }}
@@ -96,18 +100,18 @@ export const StatisticsCharts = ({
                 <Line
                   type="monotone"
                   dataKey="inProgress"
-                  stroke="#3b82f6"
+                  stroke="#f59e0b"
                   strokeWidth={2}
                   dot={{ r: 4 }}
                 />
+                {/* ✅ FIX: Changed 'todo' to 'toDo' to match your data */}
                 <Line
                   type="monotone"
-                  dataKey="todo"
+                  dataKey="toDo"
                   stroke="#6b7280"
                   strokeWidth={2}
                   dot={{ r: 4 }}
                 />
-
                 <ChartLegend content={<ChartLegendContent />} />
               </LineChart>
             </ChartContainer>
@@ -115,9 +119,8 @@ export const StatisticsCharts = ({
         </CardContent>
       </Card>
 
-      {/* project status  */}
-
-      <Card>
+      {/* --- Project Status Chart --- */}
+      <Card className="col-span-1">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <div className="space-y-0.5">
             <CardTitle className="text-base font-medium">
@@ -125,14 +128,13 @@ export const StatisticsCharts = ({
             </CardTitle>
             <CardDescription>Project status breakdown</CardDescription>
           </div>
-
           <ChartPie className="size-5 text-muted-foreground" />
         </CardHeader>
-
-        <CardContent className="w-full overflow-x-auto md:overflow-x-hidden">
-          <div className="min-w-[350px]">
+        <CardContent>
+          {/* ✅ FIX: Removed min-w-[350px], added flexible container */}
+          <div className="w-full h-[300px] min-w-0">
             <ChartContainer
-              className="h-[300px]"
+              className="h-full w-full mx-auto"
               config={{
                 Completed: { color: "#10b981" },
                 "In Progress": { color: "#3b82f6" },
@@ -167,8 +169,8 @@ export const StatisticsCharts = ({
         </CardContent>
       </Card>
 
-      {/* task priority  */}
-      <Card>
+      {/* --- Task Priority Chart --- */}
+      <Card className="col-span-1">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <div className="space-y-0.5">
             <CardTitle className="text-base font-medium">
@@ -177,11 +179,10 @@ export const StatisticsCharts = ({
             <CardDescription>Task priority breakdown</CardDescription>
           </div>
         </CardHeader>
-
-        <CardContent className="w-full overflow-x-auto md:overflow-x-hidden">
-          <div className="min-w-[350px]">
+        <CardContent>
+          <div className="w-full h-[300px] min-w-0">
             <ChartContainer
-              className="h-[300px]"
+              className="h-full w-full mx-auto"
               config={{
                 High: { color: "#ef4444" },
                 Medium: { color: "#f59e0b" },
@@ -200,7 +201,6 @@ export const StatisticsCharts = ({
                   nameKey="name"
                   label={({ name, percent }) => {
                     if (percent === 0) return null;
-
                     return `${name} (${(percent * 100).toFixed(0)}%)`;
                   }}
                   labelLine={false}
@@ -217,8 +217,8 @@ export const StatisticsCharts = ({
         </CardContent>
       </Card>
 
-      {/* Workspace Productivity Chart */}
-      <Card className="lg:col-span-2">
+      {/* --- Workspace Productivity Chart --- */}
+      <Card className="lg:col-span-2 col-span-1">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <div className="space-y-0.5">
             <CardTitle className="text-base font-medium">
@@ -228,10 +228,10 @@ export const StatisticsCharts = ({
           </div>
           <ChartBarBig className="h-5 w-5 text-muted-foreground" />
         </CardHeader>
-        <CardContent className="w-full overflow-x-auto md:overflow-x-hidden">
-          <div className="min-w-[350px]">
+        <CardContent>
+          <div className="w-full h-[300px] min-w-0">
             <ChartContainer
-              className="h-[300px]"
+              className="h-full w-full"
               config={{
                 completed: { color: "#3b82f6" },
                 total: { color: "red" },
@@ -239,23 +239,24 @@ export const StatisticsCharts = ({
             >
               <BarChart
                 data={workspaceProductivityData}
-                barGap={0}
-                barSize={20}
+                barGap={20}
+                barSize={60}
+                margin={{ bottom: 10 }}
               >
                 <XAxis
                   dataKey="name"
                   stroke="#888888"
                   fontSize={12}
-                  tickLine={false}
-                  axisLine={false}
+                  tickLine={true}
+                  axisLine={true}
                 />
                 <YAxis
                   stroke="#888888"
-                  fontSize={12}
+                  fontSize={14}
                   tickLine={false}
                   axisLine={false}
                 />
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <CartesianGrid strokeDasharray="10 10" vertical={false} />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Bar
                   dataKey="total"

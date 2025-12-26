@@ -62,7 +62,7 @@ const SidebarComponenet = ({
   return (
     <div
       className={cn(
-        "flex flex-col border-r bg-sidebar transition-all duration-300",
+        "flex flex-col border-r bg-sidebar transition-all duration-300 sticky top-0 left-0 h-screen z-50",
         isCollapsed ? "w-16 md:w-20" : "w-16 md:w-60"
       )}
     >
@@ -102,7 +102,6 @@ const SidebarComponenet = ({
           className={cn("w-full", isCollapsed && "items-center space-y-2")}
         />
       </ScrollArea>
-
       <div
         className={`${isCollapsed ? "flex items-center justify-center" : ""}  `}
       >

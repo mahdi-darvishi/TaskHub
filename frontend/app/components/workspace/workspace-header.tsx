@@ -100,6 +100,7 @@ const WorkspaceHeader = ({
                 title={member.user.name}
               >
                 <AvatarImage
+                  className="object-cover"
                   src={member.user.profilePicture}
                   alt={member.user.name}
                 />
