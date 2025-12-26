@@ -19,6 +19,7 @@ import {
   updateTaskStatus,
   updateTaskTitle,
   watchTask,
+  deleteTask,
 } from "../controllers/task.js";
 import authMiddleware from "../middleware/auth-middleware.js";
 
@@ -163,5 +164,18 @@ router.get(
     params: z.object({ taskId: z.string() }),
   }),
   getCommentsByTaskId
+);
+
+router.delete(
+  "/:workspaceId/projects/:projectId/tasks/:taskId",
+  authMiddleware,
+  validateRequest({
+    params: z.object({
+      workspaceId: z.string(),
+      projectId: z.string(),
+      taskId: z.string(),
+    }),
+  }),
+  deleteTask
 );
 export default router;

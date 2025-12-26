@@ -1,4 +1,5 @@
 import { BackButton } from "@/components/back-button";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import Loader from "@/components/loader";
 import { CommentSection } from "@/components/task/comment-section";
 import { SubTasksDetails } from "@/components/task/sub-tasks";
@@ -9,28 +10,43 @@ import { TaskPrioritySelector } from "@/components/task/task-priority-selector";
 import { TaskStatusSelector } from "@/components/task/task-status-selector";
 import TaskTitle from "@/components/task/task-title";
 import { Watchers } from "@/components/task/watchers";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   useAchievedTaskMutation,
+  useDeleteTaskMutation,
   useTaskByIdQuery,
   useWatchTaskMutation,
 } from "@/hooks/use-task";
 import { useAuth } from "@/provider/auth-context";
 import type { Project, Task } from "@/types/indedx";
 import { formatDistanceToNow } from "date-fns";
-import { Eye, EyeOff, Trash2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, Trash2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 
 const TaskDetails = () => {
   const { user } = useAuth();
+  const { mutate: deleteTask, isPending: isDeleting } = useDeleteTaskMutation();
+  const params = useParams();
+  const navigate = useNavigate();
+
   const { taskId, projectId, workspaceId } = useParams<{
     taskId: string;
     projectId: string;
     workspaceId: string;
   }>();
-  const navigate = useNavigate();
 
   const { data, isLoading } = useTaskByIdQuery(taskId!) as {
     data: {
@@ -88,6 +104,27 @@ const TaskDetails = () => {
         },
         onError: () => {
           toast.error("Failed to achieve task");
+        },
+      }
+    );
+  };
+
+  const handleDeleteTask = () => {
+    const workspaceId = params.workspaceId;
+    const projectId = params.projectId;
+    const taskId = task?._id;
+
+    if (!workspaceId || !projectId || !taskId) return;
+
+    deleteTask(
+      { workspaceId, projectId, taskId },
+      {
+        onSuccess: () => {
+          toast.success("Task deleted successfully");
+          navigate(-1);
+        },
+        onError: (error) => {
+          toast.error("Failed to delete task");
         },
       }
     );
@@ -175,15 +212,27 @@ const TaskDetails = () => {
               <div className="flex items-center gap-2 mt-4 md:mt-0">
                 <TaskStatusSelector status={task.status} taskId={task._id} />
 
-                <Button
-                  variant={"destructive"}
-                  size={"sm"}
-                  onClick={() => {}}
-                  className=""
+                <ConfirmDialog
+                  title="Delete Task?"
+                  description="This action cannot be undone. This will permanently delete the task and remove it from our servers."
+                  onConfirm={handleDeleteTask}
+                  isLoading={isDeleting}
+                  confirmText="Delete Task"
                 >
-                  <Trash2 className="hidden lg:block" />
-                  Delete Task
-                </Button>
+                  <Button
+                    variant={"destructive"}
+                    size={"sm"}
+                    disabled={isDeleting}
+                    className=""
+                  >
+                    {isDeleting ? (
+                      <Loader2 className="animate-spin hidden lg:block mr-2" />
+                    ) : (
+                      <Trash2 className="hidden lg:block mr-2" />
+                    )}
+                    Delete Task
+                  </Button>
+                </ConfirmDialog>
               </div>
             </div>
 

@@ -1,9 +1,9 @@
-import { Loader2 } from "lucide-react";
+import { Loader as LoaderIcon } from "lucide-react";
 
 const Loader = () => {
   return (
-    <div className="flex items-center justify-center h-screen">
-      <Loader2 className="w-10 h-10 animate-spin" />
+    <div className="flex justify-center items-center h-screen">
+      <LoaderIcon className="animate-spin" />
     </div>
   );
 };

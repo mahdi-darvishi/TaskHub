@@ -647,6 +647,39 @@ const getMyTasks = async (req, res) => {
   }
 };
 
+const deleteTask = async (req, res) => {
+  try {
+    const { workspaceId, projectId, taskId } = req.params;
+
+    const task = await Task.findOne({ _id: taskId, project: projectId });
+
+    if (!task) {
+      return res.status(404).json({
+        message: "Task not found or does not belong to this project",
+      });
+    }
+
+    const project = await Project.findOne({
+      _id: projectId,
+      workspace: workspaceId,
+    });
+
+    if (!project) {
+      return res.status(404).json({
+        message: "Project not found in this workspace",
+      });
+    }
+
+    await Task.deleteOne({ _id: taskId });
+
+    res.status(200).json({
+      message: "Task deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting task:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 export {
   createTask,
   getTaskById,
@@ -663,4 +696,5 @@ export {
   watchTask,
   achievedTask,
   getMyTasks,
+  deleteTask,
 };
