@@ -172,7 +172,7 @@ const loginUser = async (req, res) => {
       message: "Logged in successfully",
       token,
       user: {
-        id: user._id,
+        _id: user._id,
         name: user.name,
         email: user.email,
       },
