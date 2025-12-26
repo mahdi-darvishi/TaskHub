@@ -123,4 +123,31 @@ const getProjectTasks = async (req, res) => {
   }
 };
 
-export { createProject, getProjectDetails, getProjectTasks };
+const deleteProject = async (req, res) => {
+  try {
+    const { projectId, workspaceId } = req.params;
+
+    const project = await Project.findOne({
+      _id: projectId,
+      workspace: workspaceId,
+    });
+
+    if (!project) {
+      return res.status(404).json({
+        message: "Project not found or does not belong to this workspace",
+      });
+    }
+
+    await Task.deleteMany({ project: projectId });
+
+    await Project.deleteOne({ _id: projectId });
+
+    res.status(200).json({
+      message: "Project and all associated tasks deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting project:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+export { createProject, getProjectDetails, getProjectTasks, deleteProject };

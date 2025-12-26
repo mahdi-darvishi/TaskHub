@@ -1,4 +1,5 @@
 import { BackButton } from "@/components/back-button";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import Loader from "@/components/loader";
 import { CreateTaskDialog } from "@/components/task/create-task-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -7,14 +8,22 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { UseProjectQuery } from "@/hooks/use-project";
+import { useDeleteProjectMutation, UseProjectQuery } from "@/hooks/use-project";
 import { getProjectProgress } from "@/lib";
 import { cn } from "@/lib/utils";
 import type { Project, Task, TaskStatus } from "@/types/indedx";
 import { format } from "date-fns";
-import { AlertCircle, Calendar, CheckCircle, Clock } from "lucide-react";
+import {
+  AlertCircle,
+  Calendar,
+  CheckCircle,
+  Clock,
+  Loader2,
+  Trash2,
+} from "lucide-react";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
+import { toast } from "sonner";
 
 const ProjectDetails = () => {
   const { projectId, workspaceId } = useParams<{
@@ -32,6 +41,27 @@ const ProjectDetails = () => {
       project: Project;
     };
     isLoading: boolean;
+  };
+  const { mutate: deleteProject, isPending } = useDeleteProjectMutation();
+  const handleDelete = () => {
+    if (!workspaceId || !projectId) {
+      toast.error("Missing Workspace or Project ID");
+      return;
+    }
+
+    deleteProject(
+      { workspaceId, projectId },
+      {
+        onSuccess: () => {
+          toast.success("Project deleted successfully");
+          navigate(`/workspaces/${workspaceId}`);
+        },
+        onError: (error) => {
+          console.error(error);
+          toast.error("Failed to delete project");
+        },
+      }
+    );
   };
 
   if (isLoading)
@@ -73,8 +103,29 @@ const ProjectDetails = () => {
               {projectProgress}%
             </span>
           </div>
-
-          <Button onClick={() => setIsCreateTask(true)}>Add Task</Button>
+          <div className=" flex items-center  gap-4">
+            <Button onClick={() => setIsCreateTask(true)}>Add Task</Button>
+            <ConfirmDialog
+              title="Delete Project?"
+              description="Are you sure you want to delete this project? This action cannot be undone and will remove all associated tasks."
+              confirmText="Delete Project"
+              onConfirm={handleDelete}
+              isLoading={isPending}
+            >
+              <Button
+                variant="destructive"
+                disabled={isPending}
+                className="w-full md:w-auto"
+              >
+                {isPending ? (
+                  <Loader2 className="animate-spin mr-2 h-4 w-4" />
+                ) : (
+                  <Trash2 className="mr-2 h-4 w-4" />
+                )}
+                Delete Project
+              </Button>
+            </ConfirmDialog>
+          </div>
         </div>
       </div>
 
