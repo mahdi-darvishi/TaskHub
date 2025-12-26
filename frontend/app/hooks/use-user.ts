@@ -1,28 +1,47 @@
 import { fetchData, updateData } from "@/lib/fetch-util";
-import type {
-  ChangePasswordFormData,
-  ProfileFormData,
-} from "@/routes/user/profile";
-import { useMutation, useQuery, type QueryKey } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-const queryKey: QueryKey = ["user"];
+// --- Types ---
 
-export const useUserProfileQuery = () => {
+export interface UpdateProfilePayload {
+  name: string;
+  profilePicture?: string;
+}
+
+export interface ChangePasswordPayload {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+// --- Hooks ---
+
+export const useUserProfile = () => {
   return useQuery({
-    queryKey,
-    queryFn: () => fetchData("/users/profile"),
+    queryKey: ["user", "profile"],
+    queryFn: () => fetchData("/user/profile"),
+    staleTime: 1000 * 60 * 5,
+  });
+};
+
+export const useUpdateUserProfile = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: UpdateProfilePayload) =>
+      updateData("/user/profile", data),
+
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: ["user", "profile"],
+      });
+    },
   });
 };
 
 export const useChangePassword = () => {
   return useMutation({
-    mutationFn: (data: ChangePasswordFormData) =>
-      updateData("/users/change-password", data),
-  });
-};
-
-export const useUpdateUserProfile = () => {
-  return useMutation({
-    mutationFn: (data: ProfileFormData) => updateData("/users/profile", data),
+    mutationFn: (data: ChangePasswordPayload) =>
+      updateData("/user/change-password", data),
   });
 };
