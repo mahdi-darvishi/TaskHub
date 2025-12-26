@@ -1,4 +1,4 @@
-import Workspace from "../models/Workspace.js";
+import Workspace from "../models/workspace.js";
 import Project from "../models/project.js";
 
 const createWorkspace = async (req, res) => {
@@ -312,10 +312,47 @@ const getWorkspaceStats = async (req, res) => {
     });
   }
 };
+
+const deleteWorkspace = async (req, res) => {
+  try {
+    const { workspaceId } = req.params;
+    const userId = req.user._id;
+    const workspace = await Workspace.findById(workspaceId);
+
+    if (!workspace) {
+      return res.status(404).json({ message: "Workspace not found" });
+    }
+
+    if (workspace.owner.toString() !== userId.toString()) {
+      return res.status(403).json({
+        message: "Access denied. Only the workspace owner can delete it.",
+      });
+    }
+
+    const projects = await Project.find({ workspace: workspaceId });
+    const projectIds = projects.map((p) => p._id);
+
+    if (projectIds.length > 0) {
+      await Task.deleteMany({ project: { $in: projectIds } });
+    }
+
+    await Project.deleteMany({ workspace: workspaceId });
+
+    await Workspace.deleteOne({ _id: workspaceId });
+
+    res.status(200).json({
+      message: "Workspace and all related data deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting workspace:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 export {
   createWorkspace,
   getWorkspaces,
   getWorkspaceDetails,
   getWorkspaceProjects,
   getWorkspaceStats,
+  deleteWorkspace,
 };

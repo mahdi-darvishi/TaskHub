@@ -3,6 +3,10 @@ import WorkspaceAvatar from "./workspace-avatar";
 import { Button } from "../ui/button";
 import { Plus, UserPlus } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { ConfirmDialog } from "../confirm-dialog";
+import { useNavigate, useParams } from "react-router";
+import { useDeleteWorkspaceMutation } from "@/hooks/use-workspace";
+import { toast } from "sonner";
 
 interface WorkspaceHeaderProps {
   workspace: Workspace;
@@ -23,6 +27,24 @@ const WorkspaceHeader = ({
   onCreateProject,
   onInviteMember,
 }: WorkspaceHeaderProps) => {
+  const { workspaceId } = useParams();
+  const navigate = useNavigate();
+  const { mutate: deleteWorkspace, isPending } = useDeleteWorkspaceMutation();
+
+  const handleDelete = () => {
+    if (!workspaceId) return;
+
+    deleteWorkspace(workspaceId, {
+      onSuccess: () => {
+        toast.success("Workspace deleted successfully");
+
+        navigate(-1);
+      },
+      onError: () => {
+        toast.error("Failed to delete workspace");
+      },
+    });
+  };
   return (
     <div className="space-y-8">
       <div className="space-y-3 ">
@@ -47,6 +69,15 @@ const WorkspaceHeader = ({
               <Plus className="size-4 mr-2" />
               Create Project
             </Button>
+            <ConfirmDialog
+              title="Delete Workspace?"
+              description="This action usually cannot be undone. All projects and tasks will be lost."
+              confirmText="Delete Workspace"
+              onConfirm={handleDelete}
+              isLoading={isPending}
+            >
+              <Button variant="destructive">Delete Workspace</Button>
+            </ConfirmDialog>
           </div>
         </div>
 
