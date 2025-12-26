@@ -4,8 +4,6 @@ import {
   CheckCircle,
   CheckCircle2,
   CheckSquare,
-  Eye,
-  EyeOff,
   FileEdit,
   FolderEdit,
   FolderPlus,

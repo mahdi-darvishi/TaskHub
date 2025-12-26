@@ -28,8 +28,11 @@ export const TaskActivity = ({ resourceId }: { resourceId: string }) => {
 
             <div>
               <p className="text-sm">
-                <span className="font-medium">{activity.user.name}</span>{" "}
-                {activity.details?.description}
+                <span className="font-semibold">{activity.user.name}</span>{" "}
+                <span className="font-normal">
+                  {" "}
+                  {activity.details?.description}
+                </span>
               </p>
             </div>
           </div>

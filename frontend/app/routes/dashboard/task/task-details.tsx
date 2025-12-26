@@ -19,7 +19,7 @@ import {
 import { useAuth } from "@/provider/auth-context";
 import type { Project, Task } from "@/types/indedx";
 import { formatDistanceToNow } from "date-fns";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Trash2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 
@@ -60,6 +60,7 @@ const TaskDetails = () => {
   }
 
   const { task, project } = data;
+
   const isUserWatching = task?.watchers?.some(
     (watcher) => watcher._id?.toString() === user?._id?.toString()
   );
@@ -83,7 +84,7 @@ const TaskDetails = () => {
       { taskId: task._id },
       {
         onSuccess: () => {
-          toast.success("Task achieved");
+          toast.success("Task updated successfully");
         },
         onError: () => {
           toast.error("Failed to achieve task");
@@ -94,14 +95,14 @@ const TaskDetails = () => {
 
   return (
     <div className="container mx-auto p-0 py-4 md:px-4">
-      <div className="flex flex-col md:flex-row items-center justify-between mb-6">
+      <div className="flex flex-col md:flex-row items-center justify-between mb-2 lg:mb-6">
         <div className="flex flex-col md:flex-row gap-y-1 items-center">
           <BackButton />
 
           <h1 className="text-xl md:text-2xl font-bold">{task.title}</h1>
 
           <span>
-            {task.isArchived === false && (
+            {task.isArchived === true && (
               <Badge className="ml-2" variant={"outline"}>
                 Archived
               </Badge>
@@ -142,9 +143,9 @@ const TaskDetails = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* left side */}
-        <div className="lg:min-w-[50%]">
+        <div className="col-span-2">
           <div className="bg-card rounded-lg p-6 shadow-sm mb-6">
             <div className="flex flex-col md:flex-row justify-between  flex-wrap gap-y-3 items-start mb-4">
               <div>
@@ -176,10 +177,11 @@ const TaskDetails = () => {
 
                 <Button
                   variant={"destructive"}
-                  size="sm"
+                  size={"sm"}
                   onClick={() => {}}
-                  className="hidden md:block"
+                  className=""
                 >
+                  <Trash2 className="hidden lg:block" />
                   Delete Task
                 </Button>
               </div>
@@ -231,7 +233,7 @@ const TaskDetails = () => {
         </div>
 
         {/* right side */}
-        <div className="lg:px-10">
+        <div className="lg:col-span-1">
           <Watchers watchers={task.watchers || []} />
 
           <TaskActivity resourceId={task._id} />
