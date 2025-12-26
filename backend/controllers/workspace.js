@@ -96,6 +96,12 @@ const getWorkspaceStats = async (req, res) => {
   try {
     const { workspaceId } = req.params;
 
+    if (!workspaceId) {
+      return res.status(404).json({
+        message: "Workspace not found",
+      });
+    }
+
     const workspace = await Workspace.findById(workspaceId);
 
     if (!workspace) {
