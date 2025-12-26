@@ -3,6 +3,11 @@ import bcrypt from "bcrypt";
 import User from "../models/user.js";
 import sendEmail from "../libs/send-email.js";
 import jwt from "jsonwebtoken";
+import {
+  getVerificationEmailTemplate,
+  getResendVerificationEmailTemplate,
+  getPasswordResetTemplate,
+} from "../libs/emailTemplates.js";
 // 1. Register User
 const registerUser = async (req, res) => {
   try {
@@ -42,14 +47,7 @@ const registerUser = async (req, res) => {
     await sendEmail({
       to: newUser.email,
       subject: "Verify your TaskHub Account",
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2>Hello, ${newUser.name}!</h2>
-          <p>Thank you for registering at TaskHub. Please verify your email to activate your account.</p>
-          <a href="${verifyUrl}" style="display: inline-block; background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">Verify Email</a>
-          <p>This link will expire in 24 hours.</p>
-        </div>
-      `,
+      html: getVerificationEmailTemplate(newUser.name, verifyUrl),
     });
 
     res.status(201).json({
@@ -146,10 +144,7 @@ const loginUser = async (req, res) => {
       await sendEmail({
         to: user.email,
         subject: "Verify your TaskHub Account (New Link)",
-        html: `
-           <p>Your previous link expired. Please click below to verify:</p>
-           <a href="${verifyUrl}">Verify Email</a>
-        `,
+        html: getResendVerificationEmailTemplate(user.name, verifyUrl),
       });
 
       return res.status(403).json({
@@ -226,7 +221,7 @@ const resetPasswordRequest = async (req, res) => {
     await sendEmail({
       to: email,
       subject: "Reset your password",
-      html: `<p>Click <a href="${resetPasswordLink}">here</a> to reset your password. This link expires in 15 minutes.</p>`,
+      html: getPasswordResetTemplate(resetPasswordLink),
     });
 
     res.status(200).json({ message: "Reset password email sent" });

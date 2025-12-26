@@ -2,32 +2,26 @@ import mongoose from "mongoose";
 
 const workspaceInviteSchema = new mongoose.Schema(
   {
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
+    email: { type: String, required: true },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     workspaceId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Workspace",
       required: true,
     },
-    token: {
-      type: String,
+    inviterId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
       required: true,
-    },
-    role: {
-      type: String,
-      enum: ["admin", "member", "viewer"],
-      default: "member",
-    },
-    expiresAt: {
-      type: Date,
-      required: true,
-    },
+    }, //
+    token: { type: String, required: true, unique: true },
+    role: { type: String, default: "member", enum: ["admin", "member"] },
+    expiresAt: { type: Date, required: true },
   },
   { timestamps: true }
 );
+
+workspaceInviteSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 const WorkspaceInvite = mongoose.model(
   "WorkspaceInvite",
