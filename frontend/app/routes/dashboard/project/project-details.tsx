@@ -9,9 +9,11 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDeleteProjectMutation, UseProjectQuery } from "@/hooks/use-project";
+import { useUpdateTaskStatusMutation } from "@/hooks/use-task";
 import { getProjectProgress } from "@/lib";
 import { cn } from "@/lib/utils";
 import type { Project, Task, TaskStatus } from "@/types/indedx";
+import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
   AlertCircle,
@@ -327,13 +329,35 @@ const TaskColumn = ({
 };
 
 const TaskCard = ({ task, onClick }: { task: Task; onClick: () => void }) => {
+  const { mutate } = useUpdateTaskStatusMutation();
+  const queryClient = useQueryClient();
+
+  const handleStatusChange = (value: string, taskId: string) => {
+    mutate(
+      { taskId, status: value as TaskStatus },
+      {
+        onSuccess: () => {
+          toast.success("Status updated successfully");
+          queryClient.invalidateQueries({
+            queryKey: ["project", task.project],
+          });
+        },
+        onError: (error: any) => {
+          const errorMessage = error.response.data.message;
+          toast.error(errorMessage);
+          console.log(error);
+        },
+      }
+    );
+  };
+
   return (
     <Card
       onClick={onClick}
       className="cursor-pointer hover:shadow-md transition-all duration-300 hover:border-primary/50 group"
     >
-      <CardHeader className="p-4 pb-2">
-        <div className="flex items-start justify-between gap-2">
+      <CardHeader className="py-2 px-4">
+        <div className="flex items-start justify-between gap-1">
           <Badge
             className={cn(
               "shrink-0",
@@ -356,7 +380,7 @@ const TaskCard = ({ task, onClick }: { task: Task; onClick: () => void }) => {
                 className="size-7 md:size-8 text-muted-foreground hover:text-foreground"
                 onClick={(e) => {
                   e.stopPropagation();
-                  console.log("mark as to do");
+                  handleStatusChange("To Do", task._id);
                 }}
                 title="Mark as To Do"
               >
@@ -371,7 +395,9 @@ const TaskCard = ({ task, onClick }: { task: Task; onClick: () => void }) => {
                 className="size-7 md:size-8 text-muted-foreground hover:text-foreground"
                 onClick={(e) => {
                   e.stopPropagation();
-                  console.log("mark as in progress");
+                  handleStatusChange("In Progress", task._id);
+
+                  // TODO
                 }}
                 title="Mark as In Progress"
               >
@@ -386,7 +412,8 @@ const TaskCard = ({ task, onClick }: { task: Task; onClick: () => void }) => {
                 className="size-7 md:size-8 text-muted-foreground hover:text-foreground"
                 onClick={(e) => {
                   e.stopPropagation();
-                  console.log("mark as done");
+                  handleStatusChange("Done", task._id);
+                  // TODO
                 }}
                 title="Mark as Done"
               >
@@ -398,7 +425,7 @@ const TaskCard = ({ task, onClick }: { task: Task; onClick: () => void }) => {
         </div>
       </CardHeader>
 
-      <CardContent className="p-4 pt-2">
+      <CardContent className="px-4 -mt-8">
         <h4 className="font-medium mb-1 line-clamp-1">{task.title}</h4>
 
         {task.description && (
