@@ -11,6 +11,7 @@ import { validateRequest } from "zod-express-middleware";
 const router = express.Router();
 
 router.get("/profile", authenticateUser, getUserProfile);
+
 router.put(
   "/profile",
   authenticateUser,
