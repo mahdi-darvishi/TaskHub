@@ -6,6 +6,7 @@ import {
 } from "@react-router/dev/routes";
 
 export default [
+  // --- Auth Section ---
   layout("routes/auth/auth-layout.tsx", [
     index("routes/root/home.tsx"),
     route("sign-in", "routes/auth/sign-in.tsx"),
@@ -32,5 +33,11 @@ export default [
       "workspaces/:workspaceId/projects/:projectId/tasks/:taskId",
       "routes/dashboard/task/task-details.tsx"
     ),
+  ]),
+
+  // --- User Profile Section (New) ---
+  layout("routes/user/user-layout.tsx", [
+    // این مسیر باعث میشه آدرس http://localhost:5173/user/profile کار کنه
+    route("user/profile", "routes/user/profile.tsx"),
   ]),
 ] satisfies RouteConfig;
