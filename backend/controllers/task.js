@@ -8,27 +8,34 @@ import Workspace from "../models/workspace.js";
 const createTask = async (req, res) => {
   try {
     const { projectId } = req.params;
-    const { title, description, status, priority, dueDate, assignees } =
-      req.body;
+    const {
+      title,
+      description,
+      status = "To Do", // Default value
+      priority = "Medium", // Default value
+      dueDate,
+      assignees = [], // Default to empty array
+      tags = [],
+      estimatedHours,
+    } = req.body;
 
+    const userId = req.user._id;
+
+    // 1. Find the project
     const project = await Project.findById(projectId);
-
     if (!project) {
-      return res.status(404).json({
-        message: "Project not found",
-      });
+      return res.status(404).json({ message: "Project not found" });
     }
 
+    // 2. Find the workspace (Critical for permission checks and Task model requirement)
     const workspace = await Workspace.findById(project.workspace);
-
     if (!workspace) {
-      return res.status(404).json({
-        message: "Workspace not found",
-      });
+      return res.status(404).json({ message: "Workspace not found" });
     }
 
+    // 3. Check if the creator is a member of the workspace
     const isMember = workspace.members.some(
-      (member) => member.user.toString() === req.user._id.toString()
+      (member) => member.user.toString() === userId.toString()
     );
 
     if (!isMember) {
@@ -37,25 +44,69 @@ const createTask = async (req, res) => {
       });
     }
 
-    const newTask = await Task.create({
+    // 4. Validate Assignees (Ensure all assignees belong to the workspace)
+    if (assignees.length > 0) {
+      const validMembers = workspace.members.map((m) => m.user.toString());
+      const allAssigneesValid = assignees.every((assigneeId) =>
+        validMembers.includes(assigneeId.toString())
+      );
+
+      if (!allAssigneesValid) {
+        return res.status(400).json({
+          message: "One or more assignees are not members of this workspace.",
+        });
+      }
+    }
+
+    // 5. Calculate 'order' for Kanban Board (Put new task at the bottom of the column)
+    // We find the task with the highest order in the same project and status
+    const lastTask = await Task.findOne({
+      project: projectId,
+      status: status,
+    })
+      .sort({ order: -1 })
+      .select("order");
+
+    const newOrder = lastTask ? lastTask.order + 1 : 0;
+
+    // 6. Create the Task
+    const newTask = new Task({
       title,
       description,
       status,
       priority,
       dueDate,
       assignees,
+      tags,
+      estimatedHours,
+
+      // Relations
       project: projectId,
-      createdBy: req.user._id,
+      workspace: workspace._id, // ✅ FIX: This was missing and causing errors
+      createdBy: userId,
+
+      // Metadata
+      order: newOrder,
     });
 
+    await newTask.save();
+
+    // 7. Add task reference to Project
     project.tasks.push(newTask._id);
     await project.save();
 
+    // 8. (Optional) Populate data for immediate UI update
+    await newTask.populate([
+      { path: "assignees", select: "name profilePicture email" },
+      { path: "createdBy", select: "name profilePicture" },
+    ]);
+
     res.status(201).json(newTask);
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({
+    console.error("Create Task Error:", error);
+    res.status(500).json({
       message: "Internal server error",
+      error: error.message,
     });
   }
 };
@@ -633,17 +684,53 @@ const achievedTask = async (req, res) => {
 };
 
 const getMyTasks = async (req, res) => {
+  // try {
+  //   const tasks = await Task.find({ assignees: { $in: [req.user._id] } })
+  //     .populate("project", "title workspace")
+  //     .sort({ createdAt: -1 });
+
+  //   res.status(200).json(tasks);
+  // } catch (error) {
+  //   console.log(error);
+  //   return res.status(500).json({
+  //     message: "Internal server error",
+  //   });
+  // }
+
   try {
-    const tasks = await Task.find({ assignees: { $in: [req.user._id] } })
-      .populate("project", "title workspace")
-      .sort({ createdAt: -1 });
+    const userId = req.user._id;
+    const { workspaceId, projectId, status, priority, search } = req.query;
+
+    // 1. Base query: Find tasks assigned to the user
+    const query = {
+      assignees: userId, // Assuming 'assignees' is an array of user IDs
+    };
+
+    // 2. Apply Filters if they exist
+    if (workspaceId) query.workspace = workspaceId;
+    if (projectId) query.project = projectId;
+    if (status && status !== "ALL") query.status = status;
+    if (priority && priority !== "ALL") query.priority = priority;
+
+    // 3. Apply Search (Case insensitive regex)
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    // 4. Execute Query with Sorting (Due date ascending is usually best for tasks)
+    const tasks = await Task.find(query)
+      .populate("project", "name emoji") // Get project details
+      .populate("workspace", "name") // Get workspace details
+      .populate("assignees", "name profilePicture") // Get assignees details
+      .sort({ dueDate: 1, createdAt: -1 });
 
     res.status(200).json(tasks);
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      message: "Internal server error",
-    });
+    console.error("Get My Tasks Error:", error);
+    res.status(500).json({ message: "Failed to fetch tasks" });
   }
 };
 
