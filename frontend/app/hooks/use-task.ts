@@ -3,7 +3,7 @@ import { deleteData, fetchData, postData, updateData } from "@/lib/fetch-util";
 import type { TaskPriority, TaskStatus } from "@/types/indedx";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-export const useCreateTaskMutation = () => {
+const useCreateTaskMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -17,14 +17,14 @@ export const useCreateTaskMutation = () => {
   });
 };
 
-export const useTaskByIdQuery = (taskId: string) => {
+const useTaskByIdQuery = (taskId: string) => {
   return useQuery({
     queryKey: ["task", taskId],
     queryFn: () => fetchData(`/tasks/${taskId}`),
   });
 };
 
-export const useUpdateTaskTitleMutation = () => {
+const useUpdateTaskTitleMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -41,7 +41,7 @@ export const useUpdateTaskTitleMutation = () => {
   });
 };
 
-export const useUpdateTaskStatusMutation = () => {
+const useUpdateTaskStatusMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -58,7 +58,7 @@ export const useUpdateTaskStatusMutation = () => {
   });
 };
 
-export const useUpdateTaskDescriptionMutation = () => {
+const useUpdateTaskDescriptionMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -77,7 +77,7 @@ export const useUpdateTaskDescriptionMutation = () => {
   });
 };
 
-export const useUpdateTaskAssigneesMutation = () => {
+const useUpdateTaskAssigneesMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -96,7 +96,7 @@ export const useUpdateTaskAssigneesMutation = () => {
   });
 };
 
-export const useUpdateTaskPriorityMutation = () => {
+const useUpdateTaskPriorityMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -113,7 +113,7 @@ export const useUpdateTaskPriorityMutation = () => {
   });
 };
 
-export const useAddSubTaskMutation = () => {
+const useAddSubTaskMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -130,7 +130,7 @@ export const useAddSubTaskMutation = () => {
   });
 };
 
-export const useUpdateSubTaskMutation = () => {
+const useUpdateSubTaskMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -153,7 +153,7 @@ export const useUpdateSubTaskMutation = () => {
   });
 };
 
-export const useAddCommentMutation = () => {
+const useAddCommentMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -170,14 +170,14 @@ export const useAddCommentMutation = () => {
   });
 };
 
-export const useGetCommentsByTaskIdQuery = (taskId: string) => {
+const useGetCommentsByTaskIdQuery = (taskId: string) => {
   return useQuery({
     queryKey: ["comments", taskId],
     queryFn: () => fetchData(`/tasks/${taskId}/comments`),
   });
 };
 
-export const useWatchTaskMutation = () => {
+const useWatchTaskMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -194,7 +194,7 @@ export const useWatchTaskMutation = () => {
   });
 };
 
-export const useAchievedTaskMutation = () => {
+const useAchievedTaskMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -211,14 +211,14 @@ export const useAchievedTaskMutation = () => {
   });
 };
 
-export const useGetMyTasksQuery = () => {
+const useGetMyTasksQuery = () => {
   return useQuery({
     queryKey: ["my-tasks", "user"],
     queryFn: () => fetchData("/tasks/my-tasks"),
   });
 };
 
-export const useDeleteTaskMutation = () => {
+const useDeleteTaskMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -242,4 +242,22 @@ export const useDeleteTaskMutation = () => {
       });
     },
   });
+};
+
+export {
+  useCreateTaskMutation,
+  useTaskByIdQuery,
+  useUpdateTaskTitleMutation,
+  useUpdateTaskStatusMutation,
+  useUpdateTaskDescriptionMutation,
+  useUpdateTaskAssigneesMutation,
+  useUpdateTaskPriorityMutation,
+  useAddSubTaskMutation,
+  useUpdateSubTaskMutation,
+  useAddCommentMutation,
+  useGetCommentsByTaskIdQuery,
+  useWatchTaskMutation,
+  useAchievedTaskMutation,
+  useGetMyTasksQuery,
+  useDeleteTaskMutation,
 };

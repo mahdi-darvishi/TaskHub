@@ -22,6 +22,18 @@ const Dashboard = () => {
   const workspaceId = searchParams.get("workspaceId");
   const navigate = useNavigate();
 
+  const { data, isPending } = useGetWorkspaceStatsQuery(workspaceId!) as {
+    data: {
+      stats: StatsCardProps;
+      taskTrendsData: TaskTrendsData[];
+      projectStatusData: ProjectStatusData[];
+      taskPriorityData: TaskPriorityData[];
+      workspaceProductivityData: WorkspaceProductivityData[];
+      upcomingTasks: Task[];
+      recentProjects: Project[];
+    };
+    isPending: boolean;
+  };
   if (!workspaceId) {
     return (
       <div className="p-6 h-full flex flex-col">
@@ -35,20 +47,6 @@ const Dashboard = () => {
       </div>
     );
   }
-
-  const { data, isPending } = useGetWorkspaceStatsQuery(workspaceId!) as {
-    data: {
-      stats: StatsCardProps;
-      taskTrendsData: TaskTrendsData[];
-      projectStatusData: ProjectStatusData[];
-      taskPriorityData: TaskPriorityData[];
-      workspaceProductivityData: WorkspaceProductivityData[];
-      upcomingTasks: Task[];
-      recentProjects: Project[];
-    };
-    isPending: boolean;
-  };
-
   if (isPending) {
     return (
       <div>

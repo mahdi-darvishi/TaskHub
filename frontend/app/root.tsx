@@ -12,6 +12,8 @@ import "./app.css";
 import ReactQueryProvider from "./provider/react-query-provider";
 import { AuthProvider } from "./provider/auth-context";
 
+import { ThemeProvider } from "./provider/theme-provider";
+
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
@@ -47,7 +49,14 @@ export default function App() {
   return (
     <ReactQueryProvider>
       <AuthProvider>
-        <Outlet />
+        {/* 2. اضافه کردن ThemeProvider دور Outlet */}
+        <ThemeProvider
+          defaultTheme="system"
+          defaultColor="blue"
+          storageKey="vite-ui-theme"
+        >
+          <Outlet />
+        </ThemeProvider>
       </AuthProvider>
     </ReactQueryProvider>
   );
