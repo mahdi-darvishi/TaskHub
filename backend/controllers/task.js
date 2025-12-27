@@ -4,6 +4,7 @@ import Comment from "../models/comment.js";
 import Project from "../models/project.js";
 import Task from "../models/task.js";
 import Workspace from "../models/workspace.js";
+import { createNotification } from "../libs/notification-helper.js";
 
 const createTask = async (req, res) => {
   try {
@@ -95,6 +96,21 @@ const createTask = async (req, res) => {
     project.tasks.push(newTask._id);
     await project.save();
 
+    if (assignees && assignees.length > 0) {
+      const message = `${req.user.name} assigned you to task: ${newTask.title}`;
+
+      assignees.forEach(async (assigneeId) => {
+        await createNotification({
+          recipient: assigneeId,
+          sender: req.user._id,
+          type: "TASK_ASSIGNED",
+          message: message,
+          relatedId: newTask._id,
+          relatedModel: "Task",
+          workspace: workspace._id, // یا project.workspace
+        });
+      });
+    }
     // 8. (Optional) Populate data for immediate UI update
     await newTask.populate([
       { path: "assignees", select: "name profilePicture email" },
@@ -278,6 +294,25 @@ const updateTaskStatus = async (req, res) => {
     task.status = status;
     await task.save();
 
+    const recipients = task.assignees.map((id) => id.toString());
+    if (!recipients.includes(task.createdBy.toString())) {
+      recipients.push(task.createdBy.toString());
+    }
+
+    recipients.forEach(async (recipientId) => {
+      if (recipientId !== req.user._id.toString()) {
+        await createNotification({
+          recipient: recipientId,
+          sender: req.user._id,
+          type: "TASK_STATUS_CHANGED",
+          message: message,
+          relatedId: task._id,
+          relatedModel: "Task",
+          workspace: task.workspace,
+        });
+      }
+    });
+
     // record activity
     await recordActivity(req.user._id, "updated_task", "Task", taskId, {
       description: `updated task status from ${oldStatus} to ${status}`,
@@ -327,6 +362,23 @@ const updateTaskAssignees = async (req, res) => {
     task.assignees = assignees;
     await task.save();
 
+    const newMembers = newAssignees.filter(
+      (id) => !oldAssignees.includes(id.toString())
+    );
+
+    if (newMembers.length > 0) {
+      newMembers.forEach(async (userId) => {
+        await createNotification({
+          recipient: userId,
+          sender: req.user._id,
+          type: "TASK_ASSIGNED",
+          message: `${req.user.name} assigned you to task: ${task.title}`,
+          relatedId: task._id,
+          relatedModel: "Task",
+          workspace: task.workspace,
+        });
+      });
+    }
     // record activity
     await recordActivity(req.user._id, "updated_task", "Task", taskId, {
       description: `updated task assignees from ${oldAssignees.length} to ${assignees.length}`,
@@ -380,7 +432,26 @@ const updateTaskPriority = async (req, res) => {
     await recordActivity(req.user._id, "updated_task", "Task", taskId, {
       description: `updated task priority from ${oldPriority} to ${priority}`,
     });
+    if (priority === "High" && oldPriority !== "High") {
+      const message = `🚨 Priority of '${task.title}' changed to HIGH by ${req.user.name}`;
 
+      if (task.assignees && task.assignees.length > 0) {
+        task.assignees.forEach(async (assigneeId) => {
+          // به خود تغییر دهنده نفرست
+          if (assigneeId.toString() !== req.user._id.toString()) {
+            await createNotification({
+              recipient: assigneeId,
+              sender: req.user._id,
+              type: "TASK_UPDATED",
+              message: message,
+              relatedId: task._id,
+              relatedModel: "Task",
+              workspace: task.workspace,
+            });
+          }
+        });
+      }
+    }
     res.status(200).json(task);
   } catch (error) {
     console.log(error);
@@ -429,6 +500,23 @@ const addSubTask = async (req, res) => {
     task.subtasks.push(newSubTask);
     await task.save();
 
+    const message = `${req.user.name} added a subtask: '${title}' to '${task.title}'`;
+
+    if (task.assignees && task.assignees.length > 0) {
+      task.assignees.forEach(async (assigneeId) => {
+        if (assigneeId.toString() !== req.user._id.toString()) {
+          await createNotification({
+            recipient: assigneeId,
+            sender: req.user._id,
+            type: "TASK_UPDATED",
+            message: message,
+            relatedId: task._id,
+            relatedModel: "Task",
+            workspace: task.workspace,
+          });
+        }
+      });
+    }
     // record activity
     await recordActivity(req.user._id, "created_subtask", "Task", taskId, {
       description: `created subtask ${title}`,
@@ -522,6 +610,7 @@ const addComment = async (req, res) => {
   try {
     const { taskId } = req.params;
     const { text } = req.body;
+    const { mentionedUserIds } = req.body;
 
     const task = await Task.findById(taskId);
 
@@ -557,6 +646,20 @@ const addComment = async (req, res) => {
 
     task.comments.push(newComment._id);
     await task.save();
+
+    if (mentionedUserIds && mentionedUserIds.length > 0) {
+      mentionedUserIds.forEach(async (userId) => {
+        await createNotification({
+          recipient: userId,
+          sender: req.user._id,
+          type: "COMMENT_MENTION",
+          message: `${req.user.name} mentioned you in a comment`,
+          relatedId: task._id,
+          relatedModel: "Task",
+          workspace: task.workspace,
+        });
+      });
+    }
 
     // record activity
     await recordActivity(req.user._id, "added_comment", "Task", taskId, {
