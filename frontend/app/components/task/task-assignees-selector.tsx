@@ -77,7 +77,7 @@ export const TaskAssigneesSelector = ({
             .map((m) => (
               <div
                 key={m.user._id}
-                className="flex items-center bg-gray-100 rounded px-2 py-1"
+                className="flex items-center  rounded px-2 py-1"
               >
                 <Avatar className="size-6 mr-1">
                   <AvatarImage
@@ -97,7 +97,7 @@ export const TaskAssigneesSelector = ({
       {/* dropdown */}
       <div className="relative">
         <button
-          className="text-sm text-muted-foreground w-full border rounded px-3 py-2 text-left bg-white"
+          className="text-sm text-muted-foreground w-full border rounded px-3 py-2 text-left "
           onClick={() => setDropDownOpen(!dropDownOpen)}
         >
           {selectedIds.length === 0
@@ -106,7 +106,7 @@ export const TaskAssigneesSelector = ({
         </button>
 
         {dropDownOpen && (
-          <div className="absolute z-10 mt-1 w-full bg-white border rounded shadow-lg max-h-60 overflow-y-auto">
+          <div className="absolute z-10 mt-1 w-full px-2 py-4 bg-card border rounded shadow-lg max-h-60 overflow-y-auto ">
             <div className="flex justify-between px-2 py-1 border-b">
               <button
                 className="text-xs text-blue-600"
@@ -124,7 +124,7 @@ export const TaskAssigneesSelector = ({
 
             {projectMembers.map((m) => (
               <label
-                className="flex items-center px-3 py-2 cursor-pointer hover:bg-gray-50"
+                className="flex items-center px-3 py-2 cursor-pointer "
                 key={m.user._id}
               >
                 <Checkbox
@@ -134,7 +134,10 @@ export const TaskAssigneesSelector = ({
                 />
 
                 <Avatar className="size-6 mr-2">
-                  <AvatarImage src={m.user.profilePicture} />
+                  <AvatarImage
+                    src={m.user.profilePicture}
+                    className="object-cover"
+                  />
                   <AvatarFallback>{m.user.name.charAt(0)}</AvatarFallback>
                 </Avatar>
 
@@ -146,7 +149,7 @@ export const TaskAssigneesSelector = ({
               <Button
                 variant={"outline"}
                 size={"sm"}
-                className="font-light"
+                className="font-light mt-1"
                 onClickCapture={() => setDropDownOpen(false)}
                 disabled={isPending}
               >
@@ -154,7 +157,7 @@ export const TaskAssigneesSelector = ({
               </Button>
               <Button
                 size={"sm"}
-                className="font-light"
+                className="font-light mt-1"
                 disabled={isPending}
                 onClickCapture={() => handleSave()}
               >
