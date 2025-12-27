@@ -1,6 +1,8 @@
 import Workspace from "../models/workspace.js";
 import Project from "../models/project.js";
-
+import User from "../models/user.js";
+import sendEmail from "../libs/send-email.js";
+import { getWorkspaceInvitationTemplate } from "../libs/emailTemplates.js";
 const createWorkspace = async (req, res) => {
   try {
     const { name, description, color } = req.body;
@@ -46,9 +48,11 @@ const getWorkspaceDetails = async (req, res) => {
   try {
     const { workspaceId } = req.params;
 
-    const workspace = await Workspace.findById({
-      _id: workspaceId,
-    }).populate("members.user", "name email profilePicture");
+    // اول ورک‌اسپیس را می‌گیریم
+    let workspace = await Workspace.findById(workspaceId).populate(
+      "members.user",
+      "name email profilePicture"
+    );
 
     if (!workspace) {
       return res.status(404).json({
@@ -56,8 +60,18 @@ const getWorkspaceDetails = async (req, res) => {
       });
     }
 
+    if (!workspace.inviteCode) {
+      workspace.inviteCode =
+        Math.random().toString(36).substring(2, 8) +
+        Math.random().toString(36).substring(2, 8);
+      await workspace.save();
+    }
+
     res.status(200).json(workspace);
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
 };
 
 const getWorkspaceProjects = async (req, res) => {
@@ -349,6 +363,110 @@ const deleteWorkspace = async (req, res) => {
   }
 };
 
+const inviteUserByEmail = async (req, res) => {
+  try {
+    const { workspaceId } = req.params;
+    const { email, role } = req.body;
+
+    const workspace = await Workspace.findById(workspaceId);
+    if (!workspace)
+      return res.status(404).json({ message: "Workspace not found" });
+
+    const isRequesterMember = workspace.members.some(
+      (m) => m.user.toString() === req.user._id.toString()
+    );
+    if (!isRequesterMember) {
+      return res
+        .status(403)
+        .json({ message: "Access denied. You are not a member." });
+    }
+
+    const userToInvite = await User.findOne({ email });
+    if (userToInvite) {
+      const isAlreadyMember = workspace.members.some(
+        (m) => m.user.toString() === userToInvite._id.toString()
+      );
+      if (isAlreadyMember) {
+        return res
+          .status(400)
+          .json({ message: "User is already a member of this workspace" });
+      }
+    }
+
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    const inviteLink = `${frontendUrl}/workspaces/join/${workspace._id}/${workspace.inviteCode}`;
+
+    const emailHtml = getWorkspaceInvitationTemplate({
+      inviterName: req.user.name,
+      workspaceName: workspace.name,
+      role: role || "member",
+      inviteLink: inviteLink,
+    });
+
+    await sendEmail({
+      to: email,
+      subject: `Invitation to join ${workspace.name} on TaskHub`,
+      html: emailHtml, // استفاده از HTML تولید شده
+    });
+
+    res.status(200).json({ message: `Invitation sent to ${email}` });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to send invitation" });
+  }
+};
+
+// backend/controllers/workspace-controller.js
+
+const joinWorkspace = async (req, res) => {
+  try {
+    const { workspaceId, inviteCode } = req.body;
+    const userId = req.user._id;
+
+    const workspace = await Workspace.findById(workspaceId);
+    if (!workspace) {
+      return res.status(404).json({ message: "Workspace not found" });
+    }
+
+    console.log("--- DEBUG JOIN ---");
+    console.log("Received Code (Link):", inviteCode);
+    console.log("Database Code (DB):", workspace.inviteCode);
+    console.log("Workspace ID:", workspaceId);
+    console.log("------------------");
+    if (workspace.inviteCode !== inviteCode) {
+      return res
+        .status(400)
+        .json({ message: "Invalid or expired invite link" });
+    }
+
+    const isAlreadyMember = workspace.members.some(
+      (m) => m.user.toString() === userId.toString()
+    );
+
+    if (isAlreadyMember) {
+      return res.status(200).json({
+        message: "You are already a member",
+        workspaceId: workspace._id,
+      });
+    }
+
+    workspace.members.push({
+      user: userId,
+      role: "member",
+      joinedAt: new Date(),
+    });
+
+    await workspace.save();
+
+    res.status(200).json({
+      message: "Joined workspace successfully",
+      workspaceId: workspace._id,
+    });
+  } catch (error) {
+    console.error("Join Workspace Error:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
 export {
   createWorkspace,
   getWorkspaces,
@@ -356,4 +474,6 @@ export {
   getWorkspaceProjects,
   getWorkspaceStats,
   deleteWorkspace,
+  inviteUserByEmail,
+  joinWorkspace,
 };

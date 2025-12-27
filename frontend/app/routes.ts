@@ -25,6 +25,11 @@ export default [
     route("achieved", "routes/dashboard/achieved/index.tsx"),
     route("settings", "routes/dashboard/settings/index.tsx"),
 
+    route(
+      "workspaces/join/:workspaceId/:inviteCode",
+      "routes/dashboard/workspaces/join-workspace.tsx"
+    ),
+
     route("workspaces", "routes/dashboard/workspaces/index.tsx"),
     route(
       "workspaces/:workspaceId",

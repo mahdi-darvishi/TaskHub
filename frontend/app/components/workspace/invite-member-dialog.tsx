@@ -1,12 +1,15 @@
-import { inviteMemberSchema } from "@/lib/schema";
-import { cn } from "@/lib/utils";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, Copy, Mail, Loader2 } from "lucide-react"; // Loader2 اضافه شد
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import type { z } from "zod";
-import { Button } from "../ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import { Check, Copy, Loader2, Mail } from "lucide-react";
+import { toast } from "sonner";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Form,
   FormControl,
@@ -14,69 +17,67 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "../ui/form"; // FormMessage اضافه شد
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { useInviteMemberMutation } from "@/hooks/use-workspace"; // هوک خودمان
-import { toast } from "sonner"; // برای نمایش پیام
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 
-interface InviteMemberDialogProps {
+// ✅ ایمپورت هوک جدید
+import { useInviteUserMutation } from "@/hooks/use-workspace";
+
+const ROLES = ["member", "admin", "viewer", "manager"]; // نقش‌ها
+
+interface InviteWorkspaceModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   workspaceId: string;
+  inviteCode: string; // ✅ این پراپ جدید و حیاتی است
 }
-
-export type InviteMemberFormData = z.infer<typeof inviteMemberSchema>;
-
-const ROLES = ["admin", "member", "viewer"] as const; // نقش‌ها را ثابت کردیم
 
 export const InviteMemberDialog = ({
   isOpen,
   onOpenChange,
   workspaceId,
-}: InviteMemberDialogProps) => {
+  inviteCode,
+}: InviteWorkspaceModalProps) => {
   const [inviteTab, setInviteTab] = useState("email");
   const [linkCopied, setLinkCopied] = useState(false);
 
-  // 1. استفاده از هوک کاستوم برای ارسال درخواست
-  const { mutate, isPending } = useInviteMemberMutation(workspaceId);
+  // ✅ استفاده از هوک واقعی
+  const { mutate: inviteUser, isPending } = useInviteUserMutation();
 
-  const form = useForm<InviteMemberFormData>({
-    resolver: zodResolver(inviteMemberSchema),
-    defaultValues: {
-      email: "",
-      role: "member",
-    },
+  const form = useForm({
+    defaultValues: { email: "", role: "member" },
   });
 
-  // 2. تابع هندل کردن سابمیت فرم
-  const onSubmit = (values: InviteMemberFormData) => {
-    mutate(values, {
-      onSuccess: () => {
-        toast.success("Invitation sent successfully");
-        form.reset(); // پاک کردن فرم
-        onOpenChange(false); // بستن دیالوگ
-      },
-      onError: (error: any) => {
-        // مدیریت ارور در هوک هم انجام شده اما اینجا هم محض احتیاط هست
-        const msg = error.response?.data?.message || "Failed to invite member";
-        toast.error(msg);
-      },
-    });
-  };
+  const onSubmit = (values: { email: string; role: string }) => {
+    inviteUser(
+      { workspaceId, email: values.email, role: values.role },
 
+      {
+        onSuccess: (data) => {
+          toast.success("Invitation sent successfully");
+          form.reset();
+          onOpenChange(false);
+        },
+        onError: (error: any) => {
+          const message =
+            error.response?.data?.message || "Failed to invite user";
+          toast.error(message);
+        },
+      }
+    );
+  };
   const handleCopyInviteLink = () => {
-    // لینک را کپی میکند (مطمئن شوید روت /join در فرانت دارید)
-    const inviteLink = `${window.location.origin}/workspaces/join/${workspaceId}`;
+    // ✅ ساخت لینک واقعی و امن با استفاده از inviteCode
+    const inviteLink = `${window.location.origin}/workspaces/join/${workspaceId}/${inviteCode}`;
 
     navigator.clipboard.writeText(inviteLink);
     setLinkCopied(true);
-    toast.success("Link copied to clipboard");
+    toast.success("Invite link copied to clipboard");
 
-    setTimeout(() => {
-      setLinkCopied(false);
-    }, 3000);
+    setTimeout(() => setLinkCopied(false), 2000);
   };
 
   return (
@@ -100,6 +101,7 @@ export const InviteMemberDialog = ({
             </TabsTrigger>
           </TabsList>
 
+          {/* --- Tab: Email --- */}
           <TabsContent value="email" className="pt-4">
             <div className="grid gap-4">
               <Form {...form}>
@@ -107,7 +109,6 @@ export const InviteMemberDialog = ({
                   onSubmit={form.handleSubmit(onSubmit)}
                   className="space-y-4"
                 >
-                  {/* فیلد ایمیل */}
                   <FormField
                     control={form.control}
                     name="email"
@@ -126,7 +127,6 @@ export const InviteMemberDialog = ({
                     )}
                   />
 
-                  {/* فیلد نقش (Role) */}
                   <FormField
                     control={form.control}
                     name="role"
@@ -151,7 +151,6 @@ export const InviteMemberDialog = ({
                                 <span
                                   className={cn(
                                     "w-7 h-7 rounded-full border-2 border-muted-foreground/30 flex items-center justify-center transition-all duration-200 peer-checked:bg-primary peer-checked:border-primary peer-checked:text-primary-foreground text-transparent"
-                                    // استایل برای حالت انتخاب شده
                                   )}
                                 >
                                   <Check className="w-4 h-4" />
@@ -168,7 +167,6 @@ export const InviteMemberDialog = ({
                     )}
                   />
 
-                  {/* دکمه ارسال */}
                   <Button
                     type="submit"
                     className="w-full mt-4"
@@ -192,6 +190,7 @@ export const InviteMemberDialog = ({
             </div>
           </TabsContent>
 
+          {/* --- Tab: Link --- */}
           <TabsContent value="link" className="pt-4">
             <div className="grid gap-4">
               <div className="grid gap-2">
@@ -199,7 +198,8 @@ export const InviteMemberDialog = ({
                 <div className="flex items-center space-x-2">
                   <Input
                     readOnly
-                    value={`${window.location.origin}/workspaces/join/${workspaceId}`}
+                    // ✅ نمایش لینک کامل (شامل کد امنیتی)
+                    value={`${window.location.origin}/workspaces/join/${workspaceId}/${inviteCode}`}
                     className="font-mono text-sm"
                   />
                   <Button
@@ -217,7 +217,7 @@ export const InviteMemberDialog = ({
                 </div>
               </div>
               <p className="text-sm text-muted-foreground">
-                Anyone with the link can join this workspace as a member.
+                Anyone with this link can join this workspace as a member.
               </p>
             </div>
           </TabsContent>

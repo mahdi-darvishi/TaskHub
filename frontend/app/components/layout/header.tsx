@@ -1,34 +1,35 @@
 import { useAuth } from "@/provider/auth-context";
+import { useTheme } from "@/provider/theme-provider";
+import type { Workspace } from "@/types/indedx";
+import { PlusCircle } from "lucide-react";
+import { Link, useLoaderData, useNavigate } from "react-router";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";
-import { Bell, PlusCircle } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuTrigger,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuItem,
   DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuPortal,
+  DropdownMenuSeparator,
   DropdownMenuSub,
-  DropdownMenuSubTrigger,
   DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
-import { Link, useLoaderData, useLocation, useNavigate } from "react-router";
-import type { Workspace } from "@/types/indedx";
 import WorkspaceAvatar from "../workspace/workspace-avatar";
-import { useTheme } from "@/provider/theme-provider";
 
 import {
-  LogOut,
-  User as UserIcon,
-  Sun,
-  Moon,
-  Laptop,
-  Palette,
   Check,
+  Laptop,
+  LogOut,
+  Moon,
+  Palette,
+  Sun,
+  User as UserIcon,
 } from "lucide-react";
+import { NotificationList } from "../notification-list";
 
 interface HeaderProps {
   onWorkspaceSelected: (workspace: Workspace) => void;
@@ -102,9 +103,7 @@ export const Header = ({
         </DropdownMenu>
 
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon">
-            <Bell />
-          </Button>
+          <NotificationList />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild className="cursor-pointer">

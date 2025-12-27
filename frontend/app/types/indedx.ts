@@ -14,6 +14,7 @@ export interface Workspace {
   description?: string;
   owner: User | string;
   color: string;
+  inviteCode: string;
   members: {
     user: User;
     role: "admin" | "member" | "owner" | "viewer";

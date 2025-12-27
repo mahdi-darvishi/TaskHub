@@ -11,6 +11,8 @@ import {
   getWorkspaceProjects,
   getWorkspaceStats,
   deleteWorkspace,
+  inviteUserByEmail,
+  joinWorkspace,
 } from "../controllers/workspace.js";
 
 const router = express.Router();
@@ -37,5 +39,7 @@ router.delete(
   }),
   deleteWorkspace
 );
+router.post("/:workspaceId/invite", authMiddleware, inviteUserByEmail);
+router.post("/join", authMiddleware, joinWorkspace);
 
 export default router;

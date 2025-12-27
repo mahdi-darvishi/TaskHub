@@ -1,5 +1,11 @@
 import mongoose, { Schema } from "mongoose";
 
+const generateInviteCode = () => {
+  return (
+    Math.random().toString(36).substring(2, 8) +
+    Math.random().toString(36).substring(2, 8)
+  );
+};
 const workspaceModel = new Schema(
   {
     name: {
@@ -13,6 +19,11 @@ const workspaceModel = new Schema(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
+    },
+    inviteCode: {
+      type: String,
+      default: generateInviteCode,
+      unique: true,
     },
     members: [
       {

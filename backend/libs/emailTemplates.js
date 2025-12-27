@@ -242,32 +242,40 @@ const getPasswordResetTemplate = (resetUrl) => {
   `;
 };
 
-const getWorkspaceInvitationTemplate = (
+const getWorkspaceInvitationTemplate = ({
   inviterName,
   workspaceName,
-  inviteLink
-) => {
+  role,
+  inviteLink,
+}) => {
   return `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9fafb; padding: 20px;">
-      <div style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-        <div style="background-color: #4F46E5; padding: 20px; text-align: center;">
-          <h1 style="color: #ffffff; margin: 0; font-size: 24px;">TaskHub</h1>
+    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+      <div style="background-color: #000000; padding: 20px; text-align: center;">
+        <h2 style="color: #ffffff; margin: 0; font-size: 20px;">TaskHub Invitation</h2>
+      </div>
+      
+      <div style="padding: 30px; color: #333333; line-height: 1.6;">
+        <p style="font-size: 16px;">Hello,</p>
+        <p style="font-size: 16px;">
+          <strong>${inviterName}</strong> has invited you to join the <strong>"${workspaceName}"</strong> workspace as a <strong style="text-transform: capitalize;">${role}</strong>.
+        </p>
+        
+        <p style="margin-top: 20px;">Click the button below to accept the invitation and start collaborating:</p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${inviteLink}" style="background-color: #2563eb; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px; display: inline-block; box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);">Join Workspace</a>
         </div>
-        <div style="padding: 30px;">
-          <h2 style="color: #111827; margin-top: 0;">You're invited! 📨</h2>
-          <p style="color: #4b5563; font-size: 16px; line-height: 1.5;">
-            <strong>${inviterName}</strong> has invited you to join the <strong>"${workspaceName}"</strong> workspace on TaskHub.
-          </p>
-          <p style="color: #4b5563; font-size: 16px; line-height: 1.5;">
-            Collaborate, manage tasks, and get things done together.
-          </p>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${inviteLink}" style="background-color: #4F46E5; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">Accept Invitation</a>
-          </div>
-          <p style="color: #6b7280; font-size: 14px; text-align: center;">
-            This link will expire in 7 days. If you didn't expect this invitation, you can ignore this email.
-          </p>
-        </div>
+        
+        <p style="font-size: 14px; color: #666666; margin-top: 30px;">
+          Or copy and paste this link into your browser:
+        </p>
+        <p style="background-color: #f8fafc; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 12px; color: #475569; word-break: break-all; border: 1px solid #cbd5e1;">
+          ${inviteLink}
+        </p>
+      </div>
+      
+      <div style="background-color: #f9fafb; padding: 15px; text-align: center; font-size: 12px; color: #9ca3af; border-top: 1px solid #e0e0e0;">
+        <p>&copy; ${new Date().getFullYear()} TaskHub. All rights reserved.</p>
       </div>
     </div>
   `;

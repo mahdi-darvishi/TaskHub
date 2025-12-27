@@ -8,10 +8,19 @@ import { Loader } from "lucide-react";
 import { useState } from "react";
 import { useParams } from "react-router";
 
+type WorkspaceResponse = {
+  workspace: Workspace;
+  projects: Project[];
+};
+
 const WorkspaceDetails = () => {
   const { workspaceId } = useParams<{ workspaceId: string }>();
   const [isCreateProject, setIsCreateProject] = useState(false);
   const [isInviteMember, setIsInviteMember] = useState(false);
+
+  const { data: workspaces } = useGetWorkspaceQuery(workspaceId!) as {
+    data: WorkspaceResponse;
+  };
 
   if (!workspaceId) return <div>Workspace not found</div>;
 
@@ -51,6 +60,7 @@ const WorkspaceDetails = () => {
         isOpen={isInviteMember}
         onOpenChange={setIsInviteMember}
         workspaceId={workspaceId}
+        inviteCode={workspaces.workspace.inviteCode as string}
       />
     </div>
   );

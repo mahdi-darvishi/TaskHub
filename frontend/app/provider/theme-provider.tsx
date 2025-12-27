@@ -1,3 +1,5 @@
+"use client"; // اگر از Next.js 13+ App Router استفاده می‌کنید این خط ضروری است
+
 import { createContext, useContext, useEffect, useState } from "react";
 
 type Theme = "dark" | "light" | "system";
@@ -29,7 +31,7 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 
 export function ThemeProvider({
   children,
-  defaultTheme = "dark",
+  defaultTheme = "system",
   defaultColor = "blue",
   storageKey = "vite-ui-theme",
 }: {
@@ -38,20 +40,33 @@ export function ThemeProvider({
   defaultColor?: ThemeColor;
   storageKey?: string;
 }) {
-  // 1. Load Theme from LocalStorage
-  const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
-  );
+  // ✅ اصلاح شد: مقدار اولیه ثابت است تا در سرور کرش نکند
+  const [theme, setTheme] = useState<Theme>(defaultTheme);
+  const [color, setColor] = useState<ThemeColor>(defaultColor);
+  const [mounted, setMounted] = useState(false); // برای جلوگیری از Hydration Mismatch
 
-  // 2. Load Color from LocalStorage
-  const [color, setColor] = useState<ThemeColor>(
-    () =>
-      (localStorage.getItem(`${storageKey}-color`) as ThemeColor) ||
-      defaultColor
-  );
-
-  // 3. Effect for Dark/Light Mode
+  // 1. Load Theme & Color from LocalStorage (Client Side Only)
   useEffect(() => {
+    setMounted(true); // کامپوننت در مرورگر سوار شد
+
+    // خواندن تم
+    const storedTheme = localStorage.getItem(storageKey);
+    if (storedTheme) {
+      setTheme(storedTheme as Theme);
+    }
+
+    // خواندن رنگ
+    const storedColor = localStorage.getItem(`${storageKey}-color`);
+    if (storedColor) {
+      setColor(storedColor as ThemeColor);
+    }
+  }, [storageKey]);
+
+  // 2. Effect for Dark/Light Mode
+  useEffect(() => {
+    // اگر هنوز در مرورگر مانت نشده، اجرا نکن (برای اطمینان)
+    if (!mounted) return;
+
     const root = window.document.documentElement;
     root.classList.remove("light", "dark");
 
@@ -65,10 +80,12 @@ export function ThemeProvider({
     }
 
     root.classList.add(theme);
-  }, [theme]);
+  }, [theme, mounted]);
 
-  // 4. Effect for Theme Color
+  // 3. Effect for Theme Color
   useEffect(() => {
+    if (!mounted) return;
+
     const root = window.document.documentElement;
 
     // پاک کردن تمام کلاس‌های رنگی قبلی
@@ -86,21 +103,28 @@ export function ThemeProvider({
 
     // اضافه کردن رنگ جدید
     root.classList.add(`theme-${color}`);
-  }, [color]);
+  }, [color, mounted]);
 
   const value = {
     theme,
-    setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme);
-      setTheme(theme);
+    setTheme: (newTheme: Theme) => {
+      // فقط اگر در کلاینت هستیم ذخیره کن
+      if (typeof window !== "undefined") {
+        localStorage.setItem(storageKey, newTheme);
+      }
+      setTheme(newTheme);
     },
     color,
-    setColor: (color: ThemeColor) => {
-      localStorage.setItem(`${storageKey}-color`, color);
-      setColor(color);
+    setColor: (newColor: ThemeColor) => {
+      if (typeof window !== "undefined") {
+        localStorage.setItem(`${storageKey}-color`, newColor);
+      }
+      setColor(newColor);
     },
   };
 
+  // تا زمانی که در کلاینت مانت نشده‌ایم، برای جلوگیری از پرش تصویر (Flash) می‌توان چیزی رندر نکرد
+  // اما معمولاً رندر کردن children مشکلی ندارد، فقط تم پیش‌فرض اعمال می‌شود
   return (
     <ThemeProviderContext.Provider value={value}>
       {children}
@@ -108,7 +132,7 @@ export function ThemeProvider({
   );
 }
 
-// Custom Hook برای استفاده راحت‌تر
+// Custom Hook
 export const useTheme = () => {
   const context = useContext(ThemeProviderContext);
   if (context === undefined)

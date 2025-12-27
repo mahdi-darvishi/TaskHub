@@ -59,11 +59,11 @@ const Dashboard = () => {
     <div className="space-y-8 2xl:space-y-12 pb-10">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Dashboard</h1>
-        <p>
+        <span>
           {data.workspaceProductivityData.map((item) => (
             <p key={item.name}>{item.name}</p>
           ))}
-        </p>
+        </span>
       </div>
 
       <StatsCard data={data.stats} />

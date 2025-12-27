@@ -6,6 +6,7 @@ import projectRoutes from "./project.js";
 import taskRoutes from "./task.js";
 import userRoutes from "./user.js";
 import uploadRoutes from "./upload.js";
+import notificationRoutes from "./notification.js";
 
 const router = express.Router();
 
@@ -15,5 +16,6 @@ router.use("/projects", projectRoutes);
 router.use("/tasks", taskRoutes);
 router.use("/user", userRoutes);
 router.use("/upload", uploadRoutes);
+router.use("/notifications", notificationRoutes);
 
 export default router;

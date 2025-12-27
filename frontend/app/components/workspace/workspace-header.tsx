@@ -59,7 +59,7 @@ const WorkspaceHeader = ({
             </h2>
           </div>
 
-          <div className="flex items-center justify-between md:justify-start gap-3 mb-4 md:mb-0">
+          <div className="flex items-center flex-wrap md:items-start justify-between md:justify-start gap-1 md:gap-3 mb-4 md:mb-0">
             <Button variant="ghost" onClick={onInviteMember}>
               <UserPlus className="size-4" />
               Invite
