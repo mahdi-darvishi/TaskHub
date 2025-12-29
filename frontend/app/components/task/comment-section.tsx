@@ -1,5 +1,5 @@
-import type { Comment, User } from "@/types/indedx"; // مطمئن شو مسیر درسته
-import { useState, useRef } from "react";
+import type { Comment, User } from "@/types/indedx"; // مسیر تایپ‌ها رو چک کن
+import { useState, useRef, useEffect } from "react";
 import { ScrollArea } from "../ui/scroll-area";
 import { Separator } from "../ui/separator";
 import { Textarea } from "../ui/textarea";
@@ -12,6 +12,8 @@ import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { formatDistanceToNow } from "date-fns";
 import Loader from "../loader";
+import { useQueryClient } from "@tanstack/react-query";
+import { useSocket } from "@/provider/socket-context";
 
 interface ProjectMember {
   _id: string;
@@ -32,13 +34,48 @@ export const CommentSection = ({
   const [mentionQuery, setMentionQuery] = useState<string | null>(null);
   const [showMentions, setShowMentions] = useState(false);
   const [cursorPosition, setCursorPosition] = useState(0);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Refs
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null); //
+
+  // Hooks
+  const { socket } = useSocket();
+  const queryClient = useQueryClient();
   const { mutate: addComment, isPending } = useAddCommentMutation();
+
   const { data: comments, isLoading } = useGetCommentsByTaskIdQuery(taskId) as {
     data: Comment[];
     isLoading: boolean;
   };
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleNewComment = (data: { comment: Comment; taskId: string }) => {
+      if (data.taskId === taskId) {
+        queryClient.setQueryData(
+          ["comments", taskId],
+          (oldData: Comment[] | undefined) => {
+            if (!oldData) return [data.comment];
+            const exists = oldData.find((c) => c._id === data.comment._id);
+            if (exists) return oldData;
+            return [...oldData, data.comment];
+          }
+        );
+
+        setTimeout(() => {
+          scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+        }, 100);
+      }
+    };
+
+    socket.on("newComment", handleNewComment);
+
+    return () => {
+      socket.off("newComment", handleNewComment);
+    };
+  }, [socket, taskId, queryClient]);
 
   // --- Mention Logic ---
 
@@ -97,12 +134,23 @@ export const CommentSection = ({
   const handleAddComment = () => {
     if (!newComment.trim()) return;
 
+    const mentionedUserIds = members
+      .filter((member) => newComment.includes(`@${member.user.name}`))
+      .map((member) => member.user._id);
+
     addComment(
-      { taskId, text: newComment },
+      {
+        taskId,
+        text: newComment,
+        mentionedUserIds,
+      },
       {
         onSuccess: () => {
           setNewComment("");
           toast.success("Comment added successfully");
+          setTimeout(() => {
+            scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+          }, 100);
         },
         onError: (error: any) => {
           toast.error(error.response?.data?.message || "Failed to add comment");
@@ -145,7 +193,7 @@ export const CommentSection = ({
 
   if (isLoading)
     return (
-      <div>
+      <div className="flex justify-center p-4">
         <Loader />
       </div>
     );
@@ -154,38 +202,43 @@ export const CommentSection = ({
     <div className="bg-card rounded-lg p-6 shadow-sm">
       <h3 className="text-lg font-medium mb-4">Comments</h3>
 
-      <ScrollArea className="h-[300px] mb-4">
+      <ScrollArea className="h-[300px] mb-4 pr-4">
         {comments?.length > 0 ? (
-          comments.map((comment) => (
-            <div key={comment._id} className="flex gap-4 py-2">
-              <Avatar className="size-8">
-                <AvatarImage
-                  className="object-cover"
-                  src={comment.author.profilePicture}
-                />
-                <AvatarFallback>{comment.author.name.charAt(0)}</AvatarFallback>
-              </Avatar>
+          <div className="flex flex-col gap-4">
+            {comments.map((comment) => (
+              <div key={comment._id} className="flex gap-4 py-2">
+                <Avatar className="size-8 mt-1">
+                  <AvatarImage
+                    className="object-cover"
+                    src={comment.author.profilePicture}
+                  />
+                  <AvatarFallback>
+                    {comment.author.name.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
 
-              <div className="flex-1">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="font-medium text-sm">
-                    {comment.author.name}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {formatDistanceToNow(new Date(comment.createdAt), {
-                      addSuffix: true,
-                    })}
-                  </span>
+                <div className="flex-1 bg-accent/30 p-3 rounded-lg">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="font-medium text-sm">
+                      {comment.author.name}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {formatDistanceToNow(new Date(comment.createdAt), {
+                        addSuffix: true,
+                      })}
+                    </span>
+                  </div>
+                  <p className="text-sm text-foreground/90 whitespace-pre-wrap leading-relaxed">
+                    {renderCommentWithMentions(comment.text)}
+                  </p>
                 </div>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                  {renderCommentWithMentions(comment.text)}
-                </p>
               </div>
-            </div>
-          ))
+            ))}
+            <div ref={scrollRef} />
+          </div>
         ) : (
-          <div className="flex items-center justify-center py-8">
-            <p className="text-sm text-muted-foreground">No comment yet</p>
+          <div className="flex items-center justify-center py-8 h-full">
+            <p className="text-sm text-muted-foreground">No comments yet</p>
           </div>
         )}
       </ScrollArea>
@@ -227,7 +280,7 @@ export const CommentSection = ({
           placeholder="Add a comment (type @ to mention)"
           value={newComment}
           onChange={handleTextareaChange}
-          className="min-h-[100px]"
+          className="min-h-[100px] resize-none"
         />
 
         <div className="flex justify-end mt-4">
@@ -235,7 +288,7 @@ export const CommentSection = ({
             disabled={!newComment.trim() || isPending}
             onClick={handleAddComment}
           >
-            Post Comment
+            {isPending ? "Posting..." : "Post Comment"}
           </Button>
         </div>
       </div>

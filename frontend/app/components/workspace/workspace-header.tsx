@@ -40,8 +40,21 @@ const WorkspaceHeader = ({
 
         navigate(-1);
       },
-      onError: () => {
-        toast.error("Failed to delete workspace");
+      onError: (error: any) => {
+        const status = error.response?.status;
+        const message = error.response?.data?.message;
+
+        if (status === 403) {
+          toast.error(
+            "Permission Denied: Only the owner can delete this workspace."
+          );
+        } else if (status === 404) {
+          toast.error("Workspace not found or already deleted.");
+        } else {
+          toast.error(
+            message || "Failed to delete workspace. Please try again."
+          );
+        }
       },
     });
   };

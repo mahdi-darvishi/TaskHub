@@ -1,6 +1,6 @@
 import { formatDistanceToNow } from "date-fns";
 import { Bell } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 
 // Shadcn UI Components
@@ -19,6 +19,9 @@ import {
   useMarkAllNotificationsAsReadMutation,
   useMarkNotificationAsReadMutation,
 } from "@/hooks/use-notification";
+import { useSocket } from "@/provider/socket-context";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 interface NotificationType {
   _id: string;
@@ -32,11 +35,16 @@ interface NotificationType {
   };
   relatedId?: string;
   relatedModel?: "Task" | "Project" | "Comment";
+
+  workspaceId?: string;
+  projectId?: string;
 }
 
 export const NotificationList = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { socket } = useSocket();
 
   // Fetch Data
   const { data, isLoading } = useGetNotificationsQuery();
@@ -48,22 +56,59 @@ export const NotificationList = () => {
   const { mutate: markAllAsRead, isPending: isMarkingAll } =
     useMarkAllNotificationsAsReadMutation();
 
+  // 🔥 1. گوش دادن به ایونت‌های سوکت
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleNewNotification = (newNotification: NotificationType) => {
+      // الف) پخش صدای نوتیفیکیشن (اختیاری)
+      // const audio = new Audio("/notification-sound.mp3");
+      // audio.play().catch(e => console.log(e));
+
+      // ب) نمایش پیام پاپ‌آپ (Toast)
+      toast.info(newNotification.message, {
+        description: `By ${newNotification.sender?.name || "Someone"}`,
+        action: {
+          label: "View",
+          onClick: () => handleNotificationClick(newNotification),
+        },
+      });
+
+      // ج) آپدیت کردن لیست نوتیفیکیشن‌ها (رفرش کردن کوئری)
+      // این باعث میشه عدد قرمز و لیست اتوماتیک آپدیت بشه
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    };
+
+    socket.on("newNotification", handleNewNotification);
+
+    // تمیزکاری (خیلی مهم: جلوگیری از تکرار شدن ایونت‌ها)
+    return () => {
+      socket.off("newNotification", handleNewNotification);
+    };
+  }, [socket, queryClient]);
+
   // --- Handlers ---
 
   const handleNotificationClick = (notification: NotificationType) => {
-    // 1. Mark as read immediately
     if (!notification.isRead) {
       markAsRead(notification._id);
     }
+    setIsOpen(false);
 
-    // 2. Navigate based on type
-    setIsOpen(false); // Close popover
-    if (notification.relatedId && notification.relatedModel === "Task") {
-      // فرض بر اینکه آدرس تسک شما این شکلیه، اگه فرق داره عوضش کن
-      // اگر پروژه رو هم داری، میتونی توی URL استفاده کنی
-      navigate(`/dashboard/tasks/${notification.relatedId}`);
+    if (!notification.relatedId) return;
+
+    if (notification.relatedModel === "Task") {
+      if (notification.workspaceId && notification.projectId) {
+        navigate(
+          `/workspaces/${notification.workspaceId}/projects/${notification.projectId}/tasks/${notification.relatedId}`
+        );
+      }
     } else if (notification.relatedModel === "Project") {
-      navigate(`/dashboard/projects/${notification.relatedId}`);
+      if (notification.workspaceId) {
+        navigate(
+          `/workspaces/${notification.workspaceId}/projects/${notification.relatedId}`
+        );
+      }
     }
   };
 
@@ -78,7 +123,7 @@ export const NotificationList = () => {
       case "PROJECT_INVITE":
         return "👋";
       case "TASK_UPDATED":
-        return "⚠️"; // برای تغییر اولویت و...
+        return "⚠️";
       default:
         return "🔔";
     }
@@ -89,20 +134,13 @@ export const NotificationList = () => {
       <PopoverTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="size-5 text-muted-foreground" />
-
-          {/* Red Badge for Unread Count */}
           {unreadCount > 0 && (
             <span className="absolute top-2 right-2 size-2.5 bg-red-500 rounded-full border-2 border-background animate-pulse" />
-            // یا اگر میخوای عدد نشون بدی:
-            // <Badge variant="destructive" className="absolute -top-1 -right-1 size-5 p-0 flex items-center justify-center text-[10px] rounded-full">
-            //   {unreadCount > 9 ? "+9" : unreadCount}
-            // </Badge>
           )}
         </Button>
       </PopoverTrigger>
 
       <PopoverContent className="w-80 p-0 mr-4" align="end">
-        {/* --- Header --- */}
         <div className="flex items-center justify-between p-4 border-b">
           <h4 className="font-semibold text-sm">Notifications</h4>
           {unreadCount > 0 && (
@@ -118,8 +156,7 @@ export const NotificationList = () => {
           )}
         </div>
 
-        {/* --- List --- */}
-        <ScrollArea className="h-[350px]">
+        <ScrollArea className="h-[300px]">
           {isLoading ? (
             <div className="p-4 text-center text-xs text-muted-foreground">
               Loading...
@@ -143,17 +180,18 @@ export const NotificationList = () => {
                 >
                   <div className="relative">
                     <Avatar className="size-9 border">
-                      <AvatarImage src={notification.sender.profilePicture} />
+                      <AvatarImage
+                        src={notification.sender?.profilePicture}
+                        className="object-cover"
+                      />
                       <AvatarFallback>
-                        {notification.sender.name?.charAt(0)}
+                        {notification.sender?.name?.charAt(0) || "?"}
                       </AvatarFallback>
                     </Avatar>
-                    {/* Tiny Icon Badge */}
-                    <span className="absolute -bottom-1 -right-1 text-xs bg-background rounded-full p-0.5 border shadow-sm">
+                    <span className="absolute -bottom-1 -right-1 text-xs bg-background rounded-full p-0.5 border shadow-sm cursor-default">
                       {getIconByType(notification.type)}
                     </span>
                   </div>
-
                   <div className="flex-1 space-y-1">
                     <p
                       className={`text-sm leading-tight ${!notification.isRead ? "font-medium text-foreground" : "text-muted-foreground"}`}
@@ -166,8 +204,6 @@ export const NotificationList = () => {
                       })}
                     </p>
                   </div>
-
-                  {/* Unread Indicator Dot */}
                   {!notification.isRead && (
                     <div className="size-2 mt-1.5 bg-blue-500 rounded-full shrink-0" />
                   )}

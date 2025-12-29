@@ -331,35 +331,37 @@ const deleteWorkspace = async (req, res) => {
   try {
     const { workspaceId } = req.params;
     const userId = req.user._id;
+
+    // 1. Find the workspace purely by ID
     const workspace = await Workspace.findById(workspaceId);
 
+    // 2. Check if it exists
     if (!workspace) {
-      return res.status(404).json({ message: "Workspace not found" });
-    }
-
-    if (workspace.owner.toString() !== userId.toString()) {
-      return res.status(403).json({
-        message: "Access denied. Only the workspace owner can delete it.",
+      return res.status(404).json({
+        message: "Workspace not found",
       });
     }
 
-    const projects = await Project.find({ workspace: workspaceId });
-    const projectIds = projects.map((p) => p._id);
-
-    if (projectIds.length > 0) {
-      await Task.deleteMany({ project: { $in: projectIds } });
+    // 3. Check Ownership (Authorization)
+    // Only the owner can delete the workspace. Members can only "leave".
+    if (workspace.owner.toString() !== userId.toString()) {
+      return res.status(403).json({
+        message:
+          "You are not allowed to delete this workspace. Only the owner can delete it.",
+      });
     }
 
-    await Project.deleteMany({ workspace: workspaceId });
-
-    await Workspace.deleteOne({ _id: workspaceId });
+    // 4. Perform Delete
+    await workspace.deleteOne();
 
     res.status(200).json({
-      message: "Workspace and all related data deleted successfully",
+      message: "Workspace deleted successfully",
     });
   } catch (error) {
-    console.error("Error deleting workspace:", error);
-    res.status(500).json({ message: "Internal server error" });
+    console.log(error);
+    res.status(500).json({
+      message: "Internal server error",
+    });
   }
 };
 

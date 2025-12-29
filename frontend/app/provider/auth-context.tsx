@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const handleLogout = () => {
       logout();
-      navigate("/sign-in");
+      navigate("/");
     };
     window.addEventListener("force-logout", handleLogout);
     return () => window.removeEventListener("force-logout", handleLogout);
@@ -85,9 +85,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     setUser(null);
     setIsAuthenticated(false);
-    navigate("/sign-in");
+    // navigate("/");
 
     queryClient.clear();
+    window.location.replace("/");
   };
 
   const values = {

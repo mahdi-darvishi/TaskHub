@@ -20,8 +20,16 @@ const notificationSchema = new Schema(
 
     message: { type: String, required: true },
 
-    relatedId: { type: Schema.Types.ObjectId },
-    relatedModel: { type: String, enum: ["Task", "Project", "Comment"] },
+    relatedId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      refPath: "relatedModel", //
+    },
+    relatedModel: {
+      type: String,
+      required: true,
+      enum: ["Task", "Project", "Comment"],
+    },
 
     isRead: { type: Boolean, default: false },
     workspace: { type: Schema.Types.ObjectId, ref: "Workspace" },

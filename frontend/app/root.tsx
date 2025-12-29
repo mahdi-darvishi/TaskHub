@@ -13,6 +13,7 @@ import ReactQueryProvider from "./provider/react-query-provider";
 import { AuthProvider } from "./provider/auth-context";
 
 import { ThemeProvider } from "./provider/theme-provider";
+import { SocketProvider } from "./provider/socket-context";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -49,13 +50,14 @@ export default function App() {
   return (
     <ReactQueryProvider>
       <AuthProvider>
-        {/* 2. اضافه کردن ThemeProvider دور Outlet */}
         <ThemeProvider
           defaultTheme="system"
           defaultColor="blue"
           storageKey="vite-ui-theme"
         >
-          <Outlet />
+          <SocketProvider>
+            <Outlet />
+          </SocketProvider>
         </ThemeProvider>
       </AuthProvider>
     </ReactQueryProvider>
