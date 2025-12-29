@@ -1,27 +1,50 @@
+import { motion, type Variants } from "framer-motion";
+import {
+  ArrowRight,
+  BarChart3,
+  CheckCircle2,
+  Layout,
+  Play,
+  Star,
+  Users,
+} from "lucide-react";
+import { useState } from "react";
+
+// --- Shadcn UI Components ---
+// import { Header } from "@/components/layout/header";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"; // فرض بر این است که Avatar دارید (اگر ندارید حذف کنید)
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { Route } from "../../+types/root";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Link } from "react-router";
 
-export function meta({}: Route.MetaArgs) {
-  return [
-    { title: "TaskHub" },
-    { name: "description", content: "Welcome to React Router!" },
-  ];
-}
+import Header from "@/components/landing/header";
+import HeroSection from "@/components/landing/hero-section";
+import FeaturesSection from "@/components/landing/features-section";
+import HowItWorks from "@/components/landing/how-it-works";
+import TestimoialsSection from "@/components/landing/testimoials-section";
+import CtaSection from "@/components/landing/cta-section";
+import Footer from "@/components/landing/footer";
 
-const HomePage = () => {
+export default function LandingPage() {
   return (
-    <div className="w-full h-screen flex items-center justify-center gap-4">
-      <Link to="/sign-in">
-        <Button className="bg-blue-500 text-white">Sign in</Button>
-      </Link>
-      <Link to="/sign-up">
-        <Button variant="outline" className="bg-blue-500 text-white">
-          Sign up
-        </Button>
-      </Link>
+    <div className=" bg-background font-sans text-foreground    ">
+      <Header />
+      <main className="flex-1 bg-background w-screen  ">
+        <HeroSection />
+        <FeaturesSection />
+        <HowItWorks />
+        <TestimoialsSection />
+        <CtaSection />
+      </main>
+
+      <Footer />
     </div>
   );
-};
-
-export default HomePage;
+}
