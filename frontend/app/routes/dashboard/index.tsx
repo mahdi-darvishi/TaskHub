@@ -55,15 +55,24 @@ const Dashboard = () => {
     );
   }
 
+  console.log(data.workspaceProductivityData[0]);
+
   return (
     <div className="space-y-8 2xl:space-y-12 pb-10">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Dashboard</h1>
-        <span>
-          {data.workspaceProductivityData.map((item) => (
-            <p key={item.name}>{item.name}</p>
-          ))}
-        </span>
+        <div className="">
+          <div className="flex items-center">
+            {data.workspaceProductivityData.length > 0 ? (
+              <span className="text-3xl font-semibold">
+                {data.workspaceProductivityData.slice(-1)[0].completed}
+              </span>
+            ) : (
+              <span className="text-3xl font-semibold">0</span>
+            )}
+            <span className="ml-2 text-sm ">projects completed</span>
+          </div>
+        </div>
       </div>
 
       <StatsCard data={data.stats} />
