@@ -35,7 +35,12 @@ const SidebarComponenet = ({
     {
       title: "Workspaces",
       href: "/workspaces",
-      icon: Wrench,
+      icon: Users,
+    },
+    {
+      title: "My Tasks",
+      href: "/my-tasks",
+      icon: ListCheck,
     },
     {
       title: "Members",
