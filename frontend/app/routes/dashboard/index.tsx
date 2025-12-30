@@ -5,6 +5,7 @@ import Loader from "@/components/loader";
 import { NoDataFound } from "@/components/no-data-found";
 import { UpcomingTasks } from "@/components/upcoming-tasks";
 import { useGetWorkspaceStatsQuery } from "@/hooks/use-workspace";
+import { useWorkspace } from "@/provider/workspace-provider";
 import type {
   Project,
   ProjectStatusData,
@@ -15,11 +16,12 @@ import type {
   WorkspaceProductivityData,
 } from "@/types/indedx";
 import { Briefcase } from "lucide-react";
-import { useNavigate, useSearchParams } from "react-router";
+import { useNavigate } from "react-router";
 
 const Dashboard = () => {
-  const [searchParams] = useSearchParams();
-  const workspaceId = searchParams.get("workspaceId");
+  const { activeWorkspace } = useWorkspace();
+
+  const workspaceId = activeWorkspace?._id;
   const navigate = useNavigate();
 
   const { data, isPending } = useGetWorkspaceStatsQuery(workspaceId!) as {
@@ -54,8 +56,6 @@ const Dashboard = () => {
       </div>
     );
   }
-
-  console.log(data.workspaceProductivityData[0]);
 
   return (
     <div className="space-y-8 2xl:space-y-12 pb-10">
