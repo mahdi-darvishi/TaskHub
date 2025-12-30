@@ -1,17 +1,13 @@
 import cors from "cors";
 import dotenv from "dotenv";
-import express from "express"; // این برای تایپ‌ها یا میدلورهاست، اما app را از پایین می‌گیریم
+import express from "express";
 import mongoose from "mongoose";
 import morgan from "morgan";
 
-// 👇 تغییر ۱: ایمپورت کردن app و server از فایل سوکت
 import { app, server } from "./socket/socket.js";
 import routes from "./routes/index.js";
 
 dotenv.config();
-
-// ❌ حذف این خط: const app = express();
-// چون app را از فایل socket.js ایمپورت کردیم
 
 const PORT = process.env.PORT || 5000;
 
@@ -28,12 +24,6 @@ app.use(
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// --- Database Connection ---
-mongoose
-  .connect(process.env.MONGODB_URI)
-  .then(() => console.log("DB Connected successfully"))
-  .catch((err) => console.log("Failed to connect to DB:", err));
 
 // --- Routes ---
 app.get("/", (req, res) => {
@@ -54,8 +44,19 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: "Internal Server Error" });
 });
 
-// --- Start Server ---
-// 👇 تغییر ۲: استفاده از server.listen به جای app.listen
-server.listen(PORT, () => {
-  console.log(`Server & Socket.io running on port ${PORT}`);
-});
+// --- Database Connection & Server Start ---
+const startServer = async () => {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log("✅ DB Connected successfully");
+
+    server.listen(PORT, () => {
+      console.log(`🚀 Server & Socket.io running on port ${PORT}`);
+    });
+  } catch (err) {
+    console.log("❌ Failed to connect to DB:", err);
+    process.exit(1);
+  }
+};
+
+startServer();

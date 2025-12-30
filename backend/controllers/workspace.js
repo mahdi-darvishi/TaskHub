@@ -1,6 +1,8 @@
 import Workspace from "../models/workspace.js";
 import Project from "../models/project.js";
 import User from "../models/user.js";
+import Task from "../models/task.js";
+import Notification from "../models/notification.js";
 import sendEmail from "../libs/send-email.js";
 import { getWorkspaceInvitationTemplate } from "../libs/emailTemplates.js";
 const createWorkspace = async (req, res) => {
@@ -332,7 +334,7 @@ const deleteWorkspace = async (req, res) => {
     const { workspaceId } = req.params;
     const userId = req.user._id;
 
-    // 1. Find the workspace purely by ID
+    // 1. Find the workspace
     const workspace = await Workspace.findById(workspaceId);
 
     // 2. Check if it exists
@@ -342,8 +344,7 @@ const deleteWorkspace = async (req, res) => {
       });
     }
 
-    // 3. Check Ownership (Authorization)
-    // Only the owner can delete the workspace. Members can only "leave".
+    // 3. Check Ownership
     if (workspace.owner.toString() !== userId.toString()) {
       return res.status(403).json({
         message:
@@ -351,11 +352,18 @@ const deleteWorkspace = async (req, res) => {
       });
     }
 
-    // 4. Perform Delete
+    await Task.deleteMany({ workspace: workspaceId });
+
+    await Project.deleteMany({ workspace: workspaceId });
+
+    await Notification.deleteMany({ workspaceId: workspaceId });
+
+    // -----------------------------------------------------
+
     await workspace.deleteOne();
 
     res.status(200).json({
-      message: "Workspace deleted successfully",
+      message: "Workspace and all related projects/tasks deleted successfully",
     });
   } catch (error) {
     console.log(error);
@@ -364,7 +372,6 @@ const deleteWorkspace = async (req, res) => {
     });
   }
 };
-
 const inviteUserByEmail = async (req, res) => {
   try {
     const { workspaceId } = req.params;
@@ -418,8 +425,6 @@ const inviteUserByEmail = async (req, res) => {
   }
 };
 
-// backend/controllers/workspace-controller.js
-
 const joinWorkspace = async (req, res) => {
   try {
     const { workspaceId, inviteCode } = req.body;
@@ -430,11 +435,6 @@ const joinWorkspace = async (req, res) => {
       return res.status(404).json({ message: "Workspace not found" });
     }
 
-    console.log("--- DEBUG JOIN ---");
-    console.log("Received Code (Link):", inviteCode);
-    console.log("Database Code (DB):", workspace.inviteCode);
-    console.log("Workspace ID:", workspaceId);
-    console.log("------------------");
     if (workspace.inviteCode !== inviteCode) {
       return res
         .status(400)
@@ -458,6 +458,8 @@ const joinWorkspace = async (req, res) => {
       joinedAt: new Date(),
     });
 
+    workspace.markModified("members");
+
     await workspace.save();
 
     res.status(200).json({
@@ -469,6 +471,35 @@ const joinWorkspace = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+const getWorkspaceMembers = async (req, res) => {
+  try {
+    const { workspaceId } = req.params;
+
+    const workspace = await Workspace.findById(workspaceId).populate(
+      "members.user",
+      "name email profilePicture"
+    );
+
+    if (!workspace) {
+      return res.status(404).json({ message: "Workspace not found" });
+    }
+
+    const isMember = workspace.members.some(
+      (m) => m.user._id.toString() === req.user._id.toString()
+    );
+
+    if (!isMember) {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    res.status(200).json(workspace.members);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 export {
   createWorkspace,
   getWorkspaces,
@@ -478,4 +509,5 @@ export {
   deleteWorkspace,
   inviteUserByEmail,
   joinWorkspace,
+  getWorkspaceMembers,
 };

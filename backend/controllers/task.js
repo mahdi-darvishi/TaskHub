@@ -588,36 +588,35 @@ const addSubTask = async (req, res) => {
     const project = await Project.findById(task.project);
     if (!project) return res.status(404).json({ message: "Project not found" });
 
-    // ساخت ساب‌تسک جدید
+    if (!task.subtasks) {
+      task.subtasks = [];
+    }
+
     const newSubTask = {
       title,
-      date,
-      tag,
-      isCompleted: false,
+      completed: false,
+      createdAt: new Date(),
     };
 
-    task.subTasks.push(newSubTask);
+    task.subtasks.push(newSubTask);
+
+    task.markModified("subtasks");
     await task.save();
 
-    // برای محاسبه دقیق و ارسال به فرانت، دوباره Populate میکنیم
     const populatedTask = await task.populate(
       "assignees",
       "name profilePicture email"
     );
 
-    // --- 🔥 Socket Logic ---
-
-    // A: ارسال نوتیفیکیشن به اعضای تسک
     const recipients = task.assignees
       .map((u) => u._id.toString())
       .filter((id) => id !== userId.toString());
 
     if (recipients.length > 0) {
-      // 1. ذخیره نوتیفیکیشن
       const notificationsData = recipients.map((recipientId) => ({
         recipient: recipientId,
         sender: userId,
-        type: "SUBTASK_ADDED", // تایپ جدید
+        type: "SUBTASK_ADDED",
         message: `${req.user.name} added a subtask: ${title}`,
         isRead: false,
         relatedId: task._id,
@@ -630,7 +629,6 @@ const addSubTask = async (req, res) => {
         notificationsData
       );
 
-      // 2. ارسال پاپ‌آپ (نوتیفیکیشن)
       createdNotifications.forEach((notification) => {
         const socketId = getReceiverSocketId(notification.recipient.toString());
         if (socketId) {
@@ -646,13 +644,11 @@ const addSubTask = async (req, res) => {
       });
     }
 
-    // B: آپدیت ریل‌تایم تسک (برای تغییر تعداد ساب‌تسک‌ها در بورد)
     if (project.members.length > 0) {
       project.members.forEach((member) => {
         if (member.user.toString() !== userId.toString()) {
           const socketId = getReceiverSocketId(member.user.toString());
           if (socketId) {
-            // این باعث میشه تسک توی بورد همه آپدیت بشه
             io.to(socketId).emit("taskUpdated", populatedTask);
           }
         }
@@ -669,16 +665,24 @@ const addSubTask = async (req, res) => {
 const updateSubTask = async (req, res) => {
   try {
     const { taskId, subTaskId } = req.params;
-    const { isCompleted } = req.body; // یا هر فیلدی که آپدیت میشه
+
+    const { completed } = req.body;
+
+    const userId = req.user._id;
 
     const task = await Task.findById(taskId);
     if (!task) return res.status(404).json({ message: "Task not found" });
 
-    // پیدا کردن و آپدیت ساب‌تسک
-    const subTask = task.subTasks.id(subTaskId);
+    const subTasksArray = task.subtasks || [];
+
+    const subTask = subTasksArray.find((st) => st._id.toString() === subTaskId);
+
     if (!subTask) return res.status(404).json({ message: "Subtask not found" });
 
-    subTask.isCompleted = isCompleted;
+    subTask.completed = completed;
+
+    task.markModified("subtasks");
+
     await task.save();
 
     const populatedTask = await task.populate(
@@ -687,15 +691,10 @@ const updateSubTask = async (req, res) => {
     );
 
     // --- 🔥 Socket Logic ---
-    // اینجا فقط تسک را آپدیت می‌کنیم تا نوار پیشرفت برای همه تکان بخورد
-    // معمولاً برای تیک زدن نوتیفیکیشن نمی‌فرستند (چون اسپم میشه)، اما ریل‌تایم ضروریه
-
     const project = await Project.findById(task.project);
     if (project && project.members.length > 0) {
       project.members.forEach((member) => {
-        // به خود ارسال کننده هم میفرستیم یا نه؟ معمولا نه چون UI خودش آپدیت کرده
-        // ولی برای اطمینان به همه غیر از فرستنده میفرستیم
-        if (member.user.toString() !== req.user._id.toString()) {
+        if (member.user.toString() !== userId.toString()) {
           const socketId = getReceiverSocketId(member.user.toString());
           if (socketId) {
             io.to(socketId).emit("taskUpdated", populatedTask);
@@ -710,7 +709,6 @@ const updateSubTask = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
-
 const getActivityByResourceId = async (req, res) => {
   try {
     const { resourceId } = req.params;
@@ -913,6 +911,7 @@ const watchTask = async (req, res) => {
 const achievedTask = async (req, res) => {
   try {
     const { taskId } = req.params;
+    const userId = req.user._id;
 
     const task = await Task.findById(taskId);
 
@@ -931,7 +930,7 @@ const achievedTask = async (req, res) => {
     }
 
     const isMember = project.members.some(
-      (member) => member.user.toString() === req.user._id.toString()
+      (member) => member.user.toString() === userId.toString()
     );
 
     if (!isMember) {
@@ -939,17 +938,37 @@ const achievedTask = async (req, res) => {
         message: "You are not a member of this project",
       });
     }
-    const isAchieved = task.isArchived;
 
-    task.isArchived = !isAchieved;
+    const wasArchived = task.isArchived;
+
+    task.isArchived = !wasArchived;
+
+    if (!wasArchived) {
+      task.archivedAt = new Date();
+      task.archivedBy = userId;
+    } else {
+      task.archivedAt = null;
+      task.archivedBy = null;
+    }
+
     await task.save();
 
-    // record activity
-    await recordActivity(req.user._id, "updated_task", "Task", taskId, {
-      description: `${isAchieved ? "unachieved" : "achieved"} task ${
+    await recordActivity(userId, "updated_task", "Task", taskId, {
+      description: `${!wasArchived ? "archived" : "restored"} task ${
         task.title
       }`,
     });
+
+    if (project.members && project.members.length > 0) {
+      project.members.forEach((member) => {
+        if (member.user.toString() !== userId.toString()) {
+          const socketId = getReceiverSocketId(member.user.toString());
+          if (socketId) {
+            io.to(socketId).emit("taskUpdated", task);
+          }
+        }
+      });
+    }
 
     res.status(200).json(task);
   } catch (error) {
@@ -1040,7 +1059,43 @@ const deleteTask = async (req, res) => {
   }
 };
 
-// -
+const getArchivedTasks = async (req, res) => {
+  try {
+    const { workspaceId } = req.params;
+    const { projectId, status, sort, search } = req.query;
+
+    const query = {
+      workspace: workspaceId,
+      isArchived: true,
+    };
+    if (projectId && projectId !== "all") {
+      query.project = projectId;
+    }
+    if (status && status !== "all") {
+      query.status = status;
+    }
+    if (search) {
+      query.title = { $regex: search, $options: "i" };
+    }
+
+    let sortOption = { archivedAt: -1 }; // Newest first
+    if (sort === "oldest") {
+      sortOption = { archivedAt: 1 }; // Oldest first
+    }
+
+    const tasks = await Task.find(query)
+      .sort(sortOption)
+      .populate("project", "title status")
+      .populate("archivedBy", "name profilePicture")
+      .populate("assignees", "name profilePicture email")
+      .lean();
+
+    res.status(200).json(tasks);
+  } catch (error) {
+    console.error("Error fetching archived tasks:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 export {
   createTask,
   getTaskById,
@@ -1058,4 +1113,5 @@ export {
   achievedTask,
   getMyTasks,
   deleteTask,
+  getArchivedTasks,
 };

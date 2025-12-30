@@ -14,6 +14,7 @@ const notificationSchema = new Schema(
         "COMMENT_MENTION",
         "PROJECT_INVITE",
         "DEADLINE_APPROACHING",
+        "SUBTASK_ADDED",
       ],
       required: true,
     },
