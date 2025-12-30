@@ -1,8 +1,20 @@
 import { useAuth } from "@/provider/auth-context";
 import { useTheme } from "@/provider/theme-provider";
+import { useWorkspace } from "@/provider/workspace-provider";
 import type { Workspace } from "@/types/indedx";
-import { PlusCircle } from "lucide-react";
+import {
+  Check,
+  Laptop,
+  LogOut,
+  Moon,
+  Palette,
+  PlusCircle,
+  Sun,
+  User as UserIcon,
+} from "lucide-react";
+import { useEffect } from "react";
 import { Link, useLoaderData, useNavigate } from "react-router";
+import { NotificationList } from "../notification-list";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";
 import {
@@ -20,38 +32,52 @@ import {
 } from "../ui/dropdown-menu";
 import WorkspaceAvatar from "../workspace/workspace-avatar";
 
-import {
-  Check,
-  Laptop,
-  LogOut,
-  Moon,
-  Palette,
-  Sun,
-  User as UserIcon,
-} from "lucide-react";
-import { NotificationList } from "../notification-list";
-
 interface HeaderProps {
-  onWorkspaceSelected: (workspace: Workspace) => void;
-  selectedWorkspace: Workspace | null;
   onCreateWorkspace: () => void;
 }
 
-export const Header = ({
-  onWorkspaceSelected,
-  selectedWorkspace,
-  onCreateWorkspace,
-}: HeaderProps) => {
+export const Header = ({ onCreateWorkspace }: HeaderProps) => {
   const navigate = useNavigate();
-
   const { user, logout } = useAuth();
+  const { setTheme, theme } = useTheme();
 
   const { workspaces } = useLoaderData() as { workspaces: Workspace[] };
 
+  const { activeWorkspace, setActiveWorkspace } = useWorkspace();
+
   const handleOnClick = (workspace: Workspace) => {
-    navigate(`/dashboard?workspaceId=${workspace._id}`);
+    setActiveWorkspace(workspace);
   };
-  const { setTheme, theme } = useTheme();
+
+  useEffect(() => {
+    if (workspaces.length === 0) {
+      if (activeWorkspace !== null) {
+        setActiveWorkspace(null as any);
+      }
+      return;
+    }
+
+    if (activeWorkspace) {
+      const isCurrentWorkspaceValid = workspaces.find(
+        (w) => w._id === activeWorkspace._id
+      );
+
+      if (!isCurrentWorkspaceValid) {
+        setActiveWorkspace(workspaces[0]);
+      } else {
+        if (
+          isCurrentWorkspaceValid.name !== activeWorkspace.name ||
+          isCurrentWorkspaceValid.color !== activeWorkspace.color
+        ) {
+          setActiveWorkspace(isCurrentWorkspaceValid);
+        }
+      }
+    } else {
+      if (workspaces.length > 0) {
+        setActiveWorkspace(workspaces[0]);
+      }
+    }
+  }, [workspaces, activeWorkspace, setActiveWorkspace]);
 
   return (
     <div className="bg-background sticky top-0 z-40 border-b">
@@ -59,15 +85,15 @@ export const Header = ({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant={"outline"}>
-              {selectedWorkspace ? (
+              {activeWorkspace ? (
                 <>
-                  {selectedWorkspace.color && (
+                  {activeWorkspace.color && (
                     <WorkspaceAvatar
-                      color={selectedWorkspace.color}
-                      name={selectedWorkspace.name}
+                      color={activeWorkspace.color}
+                      name={activeWorkspace.name}
                     />
                   )}
-                  <span className="font-medium">{selectedWorkspace?.name}</span>
+                  <span className="font-medium">{activeWorkspace?.name}</span>
                 </>
               ) : (
                 <span className="font-medium">Select Workspace</span>
@@ -80,18 +106,29 @@ export const Header = ({
             <DropdownMenuSeparator />
 
             <DropdownMenuGroup>
-              {workspaces.map((ws) => (
-                <DropdownMenuItem
-                  key={ws._id}
-                  onClick={() => handleOnClick(ws)}
-                >
-                  {ws.color && (
-                    <WorkspaceAvatar color={ws.color} name={ws.name} />
-                  )}
-                  <span className="ml-2">{ws.name}</span>
-                </DropdownMenuItem>
-              ))}
+              {workspaces.length > 0 ? (
+                workspaces.map((ws) => (
+                  <DropdownMenuItem
+                    key={ws._id}
+                    onClick={() => handleOnClick(ws)}
+                  >
+                    {ws.color && (
+                      <WorkspaceAvatar color={ws.color} name={ws.name} />
+                    )}
+                    <span className="ml-2">{ws.name}</span>
+                    {activeWorkspace?._id === ws._id && (
+                      <Check className="ml-auto h-4 w-4" />
+                    )}
+                  </DropdownMenuItem>
+                ))
+              ) : (
+                <div className="p-2 text-sm text-muted-foreground text-center">
+                  No workspaces found
+                </div>
+              )}
             </DropdownMenuGroup>
+
+            <DropdownMenuSeparator />
 
             <DropdownMenuGroup>
               <DropdownMenuItem onClick={onCreateWorkspace}>
@@ -120,7 +157,6 @@ export const Header = ({
                 </Avatar>
               </button>
             </DropdownMenuTrigger>
-
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">

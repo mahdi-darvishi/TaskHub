@@ -1,5 +1,6 @@
 import { Loader2, UserPlus } from "lucide-react";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -14,11 +15,10 @@ import { useJoinWorkspaceMutation } from "@/hooks/use-workspace";
 import { useNavigate, useParams } from "react-router";
 
 const JoinWorkspace = () => {
-  // 1. Get params from URL
   const { workspaceId, inviteCode } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  // 2. Join Mutation
   const { mutate: joinWorkspace, isPending } = useJoinWorkspaceMutation();
 
   const handleJoin = () => {
@@ -32,16 +32,20 @@ const JoinWorkspace = () => {
       {
         onSuccess: (data: any) => {
           toast.success("Successfully joined the workspace!");
-          // Redirect to the workspace dashboard
-          navigate(`/workspaces/${data.workspaceId}`);
+          queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+          queryClient.invalidateQueries({
+            queryKey: ["workspace", workspaceId],
+          });
+          navigate(`/dashboard?workspaceId=${data.workspaceId}`);
         },
         onError: (error: any) => {
-          toast.error(
-            error.response?.data?.message || "Failed to join workspace"
-          );
-          // If already member, redirect anyway (optional)
-          if (error.response?.data?.message === "You are already a member") {
-            navigate(`/workspaces/${workspaceId}`);
+          const message =
+            error.response?.data?.message || "Failed to join workspace";
+
+          if (message === "You are already a member") {
+            navigate(`/dashboard?workspaceId=${workspaceId}`);
+          } else {
+            toast.error(message);
           }
         },
       }

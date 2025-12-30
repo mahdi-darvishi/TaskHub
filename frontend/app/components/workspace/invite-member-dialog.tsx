@@ -23,16 +23,15 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
-// ✅ ایمپورت هوک جدید
 import { useInviteUserMutation } from "@/hooks/use-workspace";
 
-const ROLES = ["member", "admin", "viewer", "manager"]; // نقش‌ها
+const ROLES = ["member", "admin", "viewer", "manager"];
 
 interface InviteWorkspaceModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   workspaceId: string;
-  inviteCode: string; // ✅ این پراپ جدید و حیاتی است
+  inviteCode: string;
 }
 
 export const InviteMemberDialog = ({
@@ -44,7 +43,6 @@ export const InviteMemberDialog = ({
   const [inviteTab, setInviteTab] = useState("email");
   const [linkCopied, setLinkCopied] = useState(false);
 
-  // ✅ استفاده از هوک واقعی
   const { mutate: inviteUser, isPending } = useInviteUserMutation();
 
   const form = useForm({
@@ -70,7 +68,6 @@ export const InviteMemberDialog = ({
     );
   };
   const handleCopyInviteLink = () => {
-    // ✅ ساخت لینک واقعی و امن با استفاده از inviteCode
     const inviteLink = `${window.location.origin}/workspaces/join/${workspaceId}/${inviteCode}`;
 
     navigator.clipboard.writeText(inviteLink);
@@ -198,7 +195,6 @@ export const InviteMemberDialog = ({
                 <div className="flex items-center space-x-2">
                   <Input
                     readOnly
-                    // ✅ نمایش لینک کامل (شامل کد امنیتی)
                     value={`${window.location.origin}/workspaces/join/${workspaceId}/${inviteCode}`}
                     className="font-mono text-sm"
                   />

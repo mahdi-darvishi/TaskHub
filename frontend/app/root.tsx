@@ -14,6 +14,7 @@ import { AuthProvider } from "./provider/auth-context";
 
 import { ThemeProvider } from "./provider/theme-provider";
 import { SocketProvider } from "./provider/socket-context";
+import { WorkspaceProvider } from "./provider/workspace-provider";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -56,7 +57,9 @@ export default function App() {
           storageKey="vite-ui-theme"
         >
           <SocketProvider>
-            <Outlet />
+            <WorkspaceProvider>
+              <Outlet />
+            </WorkspaceProvider>
           </SocketProvider>
         </ThemeProvider>
       </AuthProvider>

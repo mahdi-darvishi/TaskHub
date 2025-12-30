@@ -136,8 +136,8 @@ const ProjectDetails = () => {
                 ) : (
                   <Trash2 className="mr-2 h-4 w-4" />
                 )}
-                <span className="sr-only sm:not-sr-only">Delete</span>
-                <span className="sm:hidden">Delete</span>
+                <span className="sr-only sm:not-sr-only">Delete Project</span>
+                <span className="sm:hidden">Delete Project </span>
               </Button>
             </ConfirmDialog>
           </div>
