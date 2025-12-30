@@ -28,7 +28,6 @@ import { Loader2, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/provider/auth-context";
 import { useMutation } from "@tanstack/react-query";
 import { postData } from "@/lib/fetch-util";
-// اگر InputOTP نداری، این ایمپورت‌ها رو حذف کن و جاش Input معمولی بذار
 import {
   InputOTP,
   InputOTPGroup,
@@ -41,9 +40,7 @@ const SignIn = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  // State برای مدیریت مراحل: اول لاگین، بعد کد
   const [step, setStep] = useState<"LOGIN" | "2FA">("LOGIN");
-  // ذخیره ایمیل برای مرحله دوم
   const [emailFor2FA, setEmailFor2FA] = useState("");
 
   const form = useForm<SigninFormData>({
@@ -57,17 +54,14 @@ const SignIn = () => {
   const { mutate: loginMutate, isPending: isLoginPending } =
     useSignInMutation();
 
-  // هوک برای ارسال کد OTP به بک‌اند
   const { mutate: verify2FAMutate, isPending: isVerifyPending } = useMutation({
     mutationFn: async (data: { email: string; otp: string }) => {
-      // این درخواست توکن واقعی رو برمی‌گردونه
       return await postData("/auth/verify-2fa", data);
     },
     onSuccess: (data) => {
-      // ✅ حالا که توکن واقعی اومد، لاگین میکنیم
       login(data);
       toast.success("Signed in successfully!");
-      navigate("/dashboard"); // یا هر صفحه‌ای که بعد لاگین میره
+      navigate("/dashboard");
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || "Invalid code");
@@ -77,15 +71,13 @@ const SignIn = () => {
   const onLoginSubmit = (values: SigninFormData) => {
     loginMutate(values, {
       onSuccess: (data: any) => {
-        console.log("Login Response:", data); // برای دیباگ
+        console.log("Login Response:", data);
 
-        // 🛑 شرط حیاتی: اگر 2FA لازم بود، لاگین نکن! فقط استپ رو عوض کن
         if (data.twoFactorRequired) {
           setEmailFor2FA(data.email || values.email);
-          setStep("2FA"); // تغییر UI به حالت کد
+          setStep("2FA");
           toast.info("Verification code sent to your email.");
         } else {
-          // اگر 2FA خاموش بود، مثل قدیم لاگین کن
           login(data);
           toast.success("Signed in successfully!");
           navigate("/dashboard");
@@ -188,7 +180,6 @@ const SignIn = () => {
           {step === "2FA" && (
             <div className="flex flex-col items-center space-y-6 animate-in fade-in slide-in-from-right-8">
               <div className="flex justify-center w-full">
-                {/* اگر InputOTP نداری، این قسمت رو با Input معمولی عوض کن */}
                 <InputOTP
                   maxLength={6}
                   onChange={(val: any) => {
@@ -209,9 +200,7 @@ const SignIn = () => {
               <div className="w-full space-y-2">
                 <Button
                   className="w-full"
-                  onClick={() => {
-                    /* لاجیک سابمیت دستی اگر کاربر اینتر نزد */
-                  }}
+                  onClick={() => {}}
                   disabled={isVerifyPending}
                 >
                   {isVerifyPending ? (
