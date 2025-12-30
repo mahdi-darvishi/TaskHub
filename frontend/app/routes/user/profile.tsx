@@ -1,4 +1,5 @@
 import { BackButton } from "@/components/back-button";
+import { TwoFactorCard } from "@/components/two-factor-card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -251,6 +252,7 @@ const Profile = () => {
           </Form>
         </CardContent>
       </Card>
+      <TwoFactorCard user={user ?? null} />
     </div>
   );
 };

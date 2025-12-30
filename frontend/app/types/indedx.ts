@@ -6,6 +6,7 @@ export interface User {
   isEmailVerified: boolean;
   updatedAt: Date;
   profilePicture?: string;
+  is2FAEnabled?: boolean;
 }
 
 export interface Workspace {

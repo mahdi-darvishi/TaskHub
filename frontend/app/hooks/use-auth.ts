@@ -1,4 +1,4 @@
-import { postData } from "@/lib/fetch-util";
+import { postData, updateData } from "@/lib/fetch-util";
 import type { SignupFormData } from "@/routes/auth/sign-up";
 import { useMutation } from "@tanstack/react-query";
 
@@ -29,5 +29,20 @@ export const useResetPasswordMutation = () => {
       newPassword: string;
       confirmPassword: string;
     }) => postData("/auth/reset-password", data),
+  });
+};
+// 1. Hook for Enabling/Disabling 2FA (Settings Page)
+export const useToggle2FAMutation = () => {
+  return useMutation({
+    mutationFn: (data: { isEnabled: boolean; password: string }) =>
+      updateData("/user/toggle-2fa", data),
+  });
+};
+
+// 2. Hook for Verifying OTP (Login Page)
+export const useVerify2FAMutation = () => {
+  return useMutation({
+    mutationFn: (data: { email: string; otp: string }) =>
+      postData("/auth/verify-2fa", data),
   });
 };

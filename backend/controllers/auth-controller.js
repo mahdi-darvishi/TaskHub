@@ -5,8 +5,8 @@ import sendEmail from "../libs/send-email.js";
 import jwt from "jsonwebtoken";
 import {
   getVerificationEmailTemplate,
-  getResendVerificationEmailTemplate,
   getPasswordResetTemplate,
+  getTwoFACodeTemplate,
 } from "../libs/emailTemplates.js";
 // 1. Register User
 const registerUser = async (req, res) => {
