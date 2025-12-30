@@ -4,6 +4,7 @@ import {
   changePassword,
   getUserProfile,
   updateUserProfile,
+  toggleTwoFactorAuth,
 } from "../controllers/user.js";
 import { z } from "zod";
 import { validateRequest } from "zod-express-middleware";
@@ -35,6 +36,17 @@ router.put(
     }),
   }),
   changePassword
+);
+router.put(
+  "/toggle-2fa",
+  authenticateUser,
+  validateRequest({
+    body: z.object({
+      isEnabled: z.boolean(),
+      password: z.string().min(1, "Password is required"),
+    }),
+  }),
+  toggleTwoFactorAuth
 );
 
 export default router;

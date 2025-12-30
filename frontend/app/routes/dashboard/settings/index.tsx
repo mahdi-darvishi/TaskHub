@@ -1,10 +1,7 @@
 import { useState } from "react";
-import { Bell, Palette, Moon, Sun, Laptop, Check } from "lucide-react";
+import { Palette, Moon, Sun, Laptop, Check } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
 import {
   Card,
   CardContent,
@@ -31,17 +28,15 @@ export default function SettingsPage() {
 
   const { theme, setTheme, color, setColor } = useTheme();
 
-  const menuItems = [
-    { id: "appearance", label: "Appearance", icon: Palette },
-    { id: "notifications", label: "Notifications", icon: Bell },
-  ];
+  // آیتم Notifications از اینجا حذف شد
+  const menuItems = [{ id: "appearance", label: "Appearance", icon: Palette }];
 
   return (
     <div className="container max-w-6xl py-8 mx-auto h-full">
       <div className="flex flex-col space-y-2 mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
         <p className="text-muted-foreground">
-          Customize the appearance and preferences of your workspace.
+          Customize the appearance of your workspace.
         </p>
       </div>
 
@@ -199,47 +194,6 @@ export default function SettingsPage() {
                         )}
                       </div>
                     ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {/* NOTIFICATIONS */}
-          {activeTab === "notifications" && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Email Notifications</CardTitle>
-                  <CardDescription>
-                    Choose what updates you want to receive via email.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="grid gap-4">
-                  <div className="flex items-center justify-between space-x-2">
-                    <Label
-                      htmlFor="task-assign"
-                      className="flex flex-col space-y-1"
-                    >
-                      <span>Task Assignments</span>
-                      <span className="font-normal text-xs text-muted-foreground">
-                        Receive emails when you are assigned a new task.
-                      </span>
-                    </Label>
-                    <Switch id="task-assign" defaultChecked />
-                  </div>
-                  <Separator />
-                  <div className="flex items-center justify-between space-x-2">
-                    <Label
-                      htmlFor="project-updates"
-                      className="flex flex-col space-y-1"
-                    >
-                      <span>Project Updates</span>
-                      <span className="font-normal text-xs text-muted-foreground">
-                        Receive emails about major updates in your projects.
-                      </span>
-                    </Label>
-                    <Switch id="project-updates" defaultChecked />
                   </div>
                 </CardContent>
               </Card>

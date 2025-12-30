@@ -73,7 +73,6 @@ const getVerificationEmailTemplate = (name, verifyUrl) => {
   `;
 };
 
-// 1. تعریف تمپلیت (می‌تونی کنار تمپلیت قبلی نگه داری)
 const getResendVerificationEmailTemplate = (name, verifyUrl) => {
   return `
     <!DOCTYPE html>
@@ -155,7 +154,6 @@ const getResendVerificationEmailTemplate = (name, verifyUrl) => {
   `;
 };
 
-// 1. تعریف تمپلیت
 const getPasswordResetTemplate = (resetUrl) => {
   return `
     <!DOCTYPE html>
@@ -280,9 +278,25 @@ const getWorkspaceInvitationTemplate = ({
     </div>
   `;
 };
+
+const getTwoFACodeTemplate = (otpCode) => {
+  return `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+      <h2 style="color: #333; text-align: center;">Two-Factor Authentication</h2>
+      <p style="color: #555; font-size: 16px;">Hello,</p>
+      <p style="color: #555; font-size: 16px;">You are trying to log in. Please use the following code to complete your authentication:</p>
+      <div style="text-align: center; margin: 30px 0;">
+        <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #4F46E5; background: #f3f4f6; padding: 10px 20px; border-radius: 5px;">${otpCode}</span>
+      </div>
+      <p style="color: #555; font-size: 14px;">This code is valid for <strong>10 minutes</strong>.</p>
+      <p style="color: #999; font-size: 12px; margin-top: 20px; text-align: center;">If you didn't try to login, please change your password immediately.</p>
+    </div>
+  `;
+};
 export {
   getVerificationEmailTemplate,
   getResendVerificationEmailTemplate,
   getPasswordResetTemplate,
   getWorkspaceInvitationTemplate,
+  getTwoFACodeTemplate,
 };

@@ -97,4 +97,42 @@ const changePassword = async (req, res) => {
   }
 };
 
-export { getUserProfile, updateUserProfile, changePassword };
+const toggleTwoFactorAuth = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { isEnabled, password } = req.body;
+
+    const user = await User.findById(userId).select("+password");
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Incorrect password" });
+    }
+
+    user.is2FAEnabled = isEnabled;
+
+    if (!isEnabled) {
+      user.twoFAOtp = undefined;
+      user.twoFAOtpExpires = undefined;
+    }
+
+    await user.save();
+
+    res.status(200).json({
+      message: `Two-Factor Authentication ${
+        isEnabled ? "enabled" : "disabled"
+      } successfully`,
+      is2FAEnabled: user.is2FAEnabled,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+export {
+  getUserProfile,
+  updateUserProfile,
+  changePassword,
+  toggleTwoFactorAuth,
+};

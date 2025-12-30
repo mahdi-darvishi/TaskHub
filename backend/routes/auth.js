@@ -1,5 +1,6 @@
 import express from "express";
 import { validateRequest } from "zod-express-middleware";
+import { z } from "zod";
 
 // Import verifyEmail from controller
 import {
@@ -8,6 +9,7 @@ import {
   resetPasswordRequest,
   verifyEmail,
   verifyResetPasswordTokenAndResetPassword,
+  verifyTwoFactorAuth,
 } from "../controllers/auth-controller.js";
 import {
   emailSchema,
@@ -49,4 +51,14 @@ router.post(
   verifyResetPasswordTokenAndResetPassword
 );
 
+router.post(
+  "/verify-2fa",
+  validateRequest({
+    body: z.object({
+      email: z.string().email(),
+      otp: z.string().length(6),
+    }),
+  }),
+  verifyTwoFactorAuth
+);
 export default router;

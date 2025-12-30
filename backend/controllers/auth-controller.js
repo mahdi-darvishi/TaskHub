@@ -101,68 +101,51 @@ const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // 1. Find user and select password field
     const user = await User.findOne({ email }).select("+password");
 
     if (!user) {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    // 2. Verify password first (Security Best Practice)
-    // This prevents attackers from spamming emails to unverified users
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    // 3. Check if email is verified
     if (!user.isEmailVerified) {
-      // Check if the previous token is still valid (e.g., not expired)
-      if (
-        user.verificationToken &&
-        user.verificationTokenExpires > Date.now()
-      ) {
-        return res.status(403).json({
-          message:
-            "Email not verified. Please check your email for the verification link we already sent.",
-        });
-      }
+      return res.status(403).json({ message: "Email not verified..." });
+    }
 
-      // If token is expired or missing, generate a new one
-      const verificationToken = crypto.randomBytes(32).toString("hex");
-      const verificationTokenExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+    if (user.is2FAEnabled) {
+      const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-      // Update user with new token
-      user.verificationToken = verificationToken;
-      user.verificationTokenExpires = verificationTokenExpires;
+      const salt = await bcrypt.genSalt(10);
+      const hashedOtp = await bcrypt.hash(otpCode, salt);
+
+      user.twoFAOtp = hashedOtp;
+      user.twoFAOtpExpires = Date.now() + 10 * 60 * 1000;
       await user.save();
 
-      // Construct verification URL
-      const verifyUrl = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}&email=${user.email}`;
-
-      // Resend verification email
       await sendEmail({
         to: user.email,
-        subject: "Verify your TaskHub Account (New Link)",
-        html: getResendVerificationEmailTemplate(user.name, verifyUrl),
+        subject: "Your Login Verification Code",
+        html: getTwoFACodeTemplate(otpCode),
       });
 
-      return res.status(403).json({
-        message:
-          "Email not verified. A new verification link has been sent to your email.",
+      return res.status(200).json({
+        message: "OTP sent to email",
+        twoFactorRequired: true,
+        email: user.email,
       });
     }
 
-    // 4. Generate Login Token (JWT)
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
 
-    // Update last login time
     user.lastLogin = new Date();
     await user.save();
 
-    // Prepare user data for response (exclude password)
     res.status(200).json({
       message: "Logged in successfully",
       token,
@@ -174,9 +157,61 @@ const loginUser = async (req, res) => {
       },
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
+const verifyTwoFactorAuth = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({ message: "Email and OTP are required" });
+    }
+
+    const user = await User.findOne({
+      email,
+      twoFAOtpExpires: { $gt: Date.now() },
+    }).select("+twoFAOtp +twoFAOtpExpires");
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid email or expired OTP" });
+    }
+
+    if (!user.twoFAOtp) {
+      return res.status(400).json({ message: "No OTP request found" });
+    }
+
+    const isMatch = await bcrypt.compare(otp, user.twoFAOtp);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid OTP code" });
+    }
+
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
+
+    user.twoFAOtp = undefined;
+    user.twoFAOtpExpires = undefined;
+    user.lastLogin = new Date();
+    await user.save();
+
+    res.status(200).json({
+      message: "Login successful",
+      token,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        profilePicture: user.profilePicture,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 const resetPasswordRequest = async (req, res) => {
   try {
     const { email } = req.body;
@@ -296,4 +331,5 @@ export {
   verifyEmail,
   resetPasswordRequest,
   verifyResetPasswordTokenAndResetPassword,
+  verifyTwoFactorAuth,
 };
