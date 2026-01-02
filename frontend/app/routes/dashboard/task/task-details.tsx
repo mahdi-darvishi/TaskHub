@@ -10,17 +10,6 @@ import { TaskPrioritySelector } from "@/components/task/task-priority-selector";
 import { TaskStatusSelector } from "@/components/task/task-status-selector";
 import TaskTitle from "@/components/task/task-title";
 import { Watchers } from "@/components/task/watchers";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,6 +24,7 @@ import { formatDistanceToNow } from "date-fns";
 import { Eye, EyeOff, Loader2, Trash2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
+import { format } from "date-fns";
 
 const TaskDetails = () => {
   const { user } = useAuth();
@@ -60,11 +50,7 @@ const TaskDetails = () => {
     useAchievedTaskMutation();
 
   if (isLoading) {
-    return (
-      <div>
-        <Loader />
-      </div>
-    );
+    return <Loader />;
   }
 
   if (!data) {
@@ -205,6 +191,12 @@ const TaskDetails = () => {
                     {formatDistanceToNow(new Date(task.createdAt), {
                       addSuffix: true,
                     })}
+                  </span>
+                </div>
+                <div className="text-sm md:text-base font-normal mt-1">
+                  Due Date:{" "}
+                  <span className=" text-muted-foreground">
+                    {format(new Date(task.dueDate), "MMMM d yyyy")}
                   </span>
                 </div>
               </div>

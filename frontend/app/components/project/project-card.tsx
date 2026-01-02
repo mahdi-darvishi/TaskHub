@@ -32,7 +32,7 @@ export const ProjectCard = ({
             <CardTitle>{project.title}</CardTitle>
             <span
               className={cn(
-                "text-xs rounded-full",
+                "text-xs rounded-full py-1 px-2",
                 getTaskStatusColor(project.status)
               )}
             >
@@ -62,8 +62,8 @@ export const ProjectCard = ({
 
               {project.dueDate && (
                 <div className="flex items-center text-xs text-muted-foreground">
-                  <CalendarDays className="w-4 h-4" />
-                  <span>{format(project.dueDate, "MMM d, yyyy")}</span>
+                  <CalendarDays className="w-4 h-4 mr-1" />
+                  <span>{format(project.dueDate, "MMMM d, y")}</span>
                 </div>
               )}
             </div>

@@ -1,10 +1,11 @@
+import Loader from "@/components/loader";
 import { CreateProjectDialog } from "@/components/project/create-project";
 import { InviteMemberDialog } from "@/components/workspace/invite-member-dialog";
 import { ProjectList } from "@/components/workspace/project-list";
 import WorkspaceHeader from "@/components/workspace/workspace-header";
 import { useGetWorkspaceQuery } from "@/hooks/use-workspace";
 import type { Project, Workspace } from "@/types/indedx";
-import { Loader } from "lucide-react";
+
 import { useState } from "react";
 import { useParams } from "react-router";
 

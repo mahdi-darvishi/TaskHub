@@ -1,7 +1,5 @@
-import { useEffect, useState } from "react";
 import { format, formatDistanceToNow } from "date-fns";
 import {
-  Loader2,
   Mail,
   Search,
   Shield,
@@ -9,6 +7,7 @@ import {
   User as UserIcon,
   UserPlus,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 // UI Components
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -24,6 +23,7 @@ import { useAuth } from "@/provider/auth-context";
 import { useWorkspace } from "@/provider/workspace-provider";
 
 // Components
+import Loader from "@/components/loader";
 import { InviteMemberDialog } from "@/components/workspace/invite-member-dialog";
 
 // Types
@@ -115,14 +115,7 @@ export default function MembersPage() {
   }
 
   if (showLoading) {
-    return (
-      <div className="flex items-center justify-center h-full min-h-[500px]">
-        <div className="flex flex-col items-center gap-2">
-          <Loader2 className="size-8 animate-spin text-primary" />
-          <p className="text-xs text-muted-foreground">Loading members...</p>
-        </div>
-      </div>
-    );
+    return <Loader />;
   }
 
   return (

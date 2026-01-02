@@ -11,10 +11,11 @@ import { CreateWorkspace } from "@/components/workspace/create-workspace";
 import WorkspaceAvatar from "@/components/workspace/workspace-avatar";
 import { useGetWorkspacesQuery } from "@/hooks/use-workspace";
 import type { Workspace } from "@/types/indedx";
-import { Loader, PlusCircle, Users } from "lucide-react";
+import { PlusCircle, Users } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
 import { format } from "date-fns";
+import Loader from "@/components/loader";
 
 const Workspaces = () => {
   const [isCreatingWorkspace, setIsCreatingWorkspace] = useState(false);

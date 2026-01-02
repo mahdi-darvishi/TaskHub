@@ -20,6 +20,7 @@ import {
   Calendar,
   CheckCircle,
   Clock,
+  Edit,
   Loader2,
   Trash2,
 } from "lucide-react";
@@ -66,12 +67,7 @@ const ProjectDetails = () => {
     );
   };
 
-  if (isLoading)
-    return (
-      <div>
-        <Loader />
-      </div>
-    );
+  if (isLoading) return <Loader />;
 
   const { project, tasks } = data;
   const projectProgress = getProjectProgress(tasks);
@@ -80,6 +76,10 @@ const ProjectDetails = () => {
     navigate(
       `/workspaces/${workspaceId}/projects/${projectId}/tasks/${taskId}`
     );
+  };
+
+  const handleEditProject = () => {
+    console.log("click ");
   };
 
   return (
@@ -92,6 +92,10 @@ const ProjectDetails = () => {
             <h1 className="text-xl md:text-2xl font-bold truncate max-w-[300px] md:max-w-md">
               {project.title}
             </h1>
+
+            <span onClick={handleEditProject}>
+              <Edit className="w-4 h-4 cursor-pointer" />
+            </span>
           </div>
           {project.description && (
             <p className="text-sm text-gray-500 max-w-2xl">
