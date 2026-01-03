@@ -441,7 +441,7 @@ const TaskCard = ({ task, onClick }: { task: Task; onClick: () => void }) => {
         <h4 className="font-medium mb-1 line-clamp-1">{task.title}</h4>
 
         {task.description && (
-          <p className="text-sm text-muted-foreground line-clamp-2 mb-3 min-h-[40px]">
+          <p className="text-sm text-muted-foreground line-clamp-2 mb-3 min-h-10">
             {task.description}
           </p>
         )}
