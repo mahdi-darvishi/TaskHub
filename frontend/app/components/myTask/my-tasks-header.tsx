@@ -13,7 +13,7 @@ export const MyTasksHeader = () => {
       <div className="flex items-center gap-2 px-4 py-2 bg-background rounded-lg border shadow-sm">
         <CalendarDays className="h-4 w-4 text-muted-foreground" />
         <span className="text-sm font-medium">
-          {format(new Date(), "EEEE, MMMM do")}
+          {format(new Date(), "EEEE d MMMM yyyy")}
         </span>
       </div>
     </div>

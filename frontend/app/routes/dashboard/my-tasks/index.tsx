@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { isToday, isPast } from "date-fns";
+import { isToday, isPast, isThisWeek } from "date-fns"; // Added isThisWeek
 
 // Hooks
 import {
@@ -19,15 +19,19 @@ import { TaskBoardView } from "@/components/myTask/task-board-view";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 
-// Types
+// Types definition for Date Filter
+export type DateFilterType = "ALL" | "TODAY" | "WEEK" | "OVERDUE";
 
 export default function MyTasksPage() {
   const queryClient = useQueryClient();
   const QUERY_KEY = ["my-tasks", "user"];
+
   // --- States ---
   const [view, setView] = useState<"list" | "board">("list");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterPriority, setFilterPriority] = useState<string | "ALL">("ALL");
+  // New state for date filtering
+  const [filterDate, setFilterDate] = useState<DateFilterType>("ALL");
 
   // --- API Hooks ---
   const { data: tasksData, isLoading, isError } = useGetMyTasksQuery();
@@ -39,12 +43,37 @@ export default function MyTasksPage() {
 
   // Filtering Logic
   const filteredTasks = tasks.filter((task) => {
+    // 1. Search Filter
     const matchesSearch = task.title
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
+
+    // 2. Priority Filter
     const matchesPriority =
       filterPriority === "ALL" || task.priority === filterPriority;
-    return matchesSearch && matchesPriority;
+
+    // 3. Date Filter (Fix Here 👇)
+    let matchesDate = true;
+    if (filterDate !== "ALL") {
+      if (!task.dueDate) {
+        matchesDate = false;
+      } else {
+        const date = new Date(task.dueDate);
+
+        if (filterDate === "TODAY") {
+          matchesDate = isToday(date);
+        } else if (filterDate === "WEEK") {
+          // ✅ تغییر مهم: weekStartsOn: 6 یعنی شروع هفته از شنبه است
+          // اگر می‌خواهی دوشنبه باشد، عدد 1 را بگذار
+          matchesDate = isThisWeek(date, { weekStartsOn: 6 });
+        } else if (filterDate === "OVERDUE") {
+          matchesDate =
+            isPast(date) && !isToday(date) && task.status !== "Done";
+        }
+      }
+    }
+
+    return matchesSearch && matchesPriority && matchesDate;
   });
 
   // Stats Logic
@@ -87,6 +116,9 @@ export default function MyTasksPage() {
         setSearchQuery={setSearchQuery}
         filterPriority={filterPriority}
         setFilterPriority={setFilterPriority}
+        // Pass the new date filter props
+        filterDate={filterDate}
+        setFilterDate={setFilterDate}
         view={view}
         setView={setView}
       />
