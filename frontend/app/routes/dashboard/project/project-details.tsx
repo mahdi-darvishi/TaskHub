@@ -1,6 +1,7 @@
 import { BackButton } from "@/components/back-button";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import Loader from "@/components/loader";
+import { EditProjectDialog } from "@/components/project/edit-project-dialog";
 import { CreateTaskDialog } from "@/components/task/create-task-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -37,6 +38,7 @@ const ProjectDetails = () => {
 
   const [isCreateTask, setIsCreateTask] = useState(false);
   const [taskFilter, setTaskFilter] = useState<TaskStatus | "All">("All");
+  const [isEditProject, setIsEditProject] = useState(false);
 
   const { data, isLoading } = UseProjectQuery(projectId!) as {
     data: {
@@ -79,9 +81,8 @@ const ProjectDetails = () => {
   };
 
   const handleEditProject = () => {
-    console.log("click ");
+    setIsEditProject(true);
   };
-
   return (
     <div className="space-y-6 md:space-y-8 px-1 md:px-0">
       {/* Header Section */}
@@ -263,6 +264,13 @@ const ProjectDetails = () => {
         onOpenChange={setIsCreateTask}
         projectId={projectId!}
         projectMembers={project.members as any}
+      />
+
+      <EditProjectDialog
+        open={isEditProject}
+        onOpenChange={setIsEditProject}
+        project={project}
+        workspaceId={workspaceId!}
       />
     </div>
   );

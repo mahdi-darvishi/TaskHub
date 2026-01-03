@@ -149,4 +149,48 @@ const deleteProject = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
-export { createProject, getProjectDetails, getProjectTasks, deleteProject };
+
+const updateProject = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const { workspaceId } = req.params;
+
+    const { title, description, status, startDate, dueDate, tags, members } =
+      req.body;
+
+    const updatedProject = await Project.findOneAndUpdate(
+      { _id: projectId, workspace: workspaceId },
+      {
+        $set: {
+          title,
+          description,
+          status,
+          startDate,
+          dueDate,
+          tags,
+          members,
+        },
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedProject) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+
+    res.status(200).json({
+      message: "Project updated successfully",
+      project: updatedProject,
+    });
+  } catch (error) {
+    console.error("Error updating project:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+export {
+  createProject,
+  getProjectDetails,
+  getProjectTasks,
+  deleteProject,
+  updateProject,
+};
