@@ -1006,7 +1006,7 @@ const getMyTasks = async (req, res) => {
 
     // 4. Execute Query with Sorting (Due date ascending is usually best for tasks)
     const tasks = await Task.find(query)
-      .populate("project", "name emoji") // Get project details
+      .populate("project", "title description") // Get project details
       .populate("workspace", "name") // Get workspace details
       .populate("assignees", "name profilePicture") // Get assignees details
       .sort({ dueDate: 1, createdAt: -1 });

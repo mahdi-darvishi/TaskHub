@@ -167,7 +167,7 @@ const TaskGroup = ({
                 </Link>
                 <div className="flex items-center flex-wrap gap-2 text-xs text-muted-foreground">
                   <Badge variant="outline" className="font-normal text-[10px]">
-                    {task.project?.name || "No Project"}
+                    {task.project?.title || "No Project"}
                   </Badge>
                   {task.workspace && (
                     <>

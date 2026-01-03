@@ -22,7 +22,6 @@ interface BoardViewProps {
 
 export const TaskBoardView = ({ tasks, onStatusChange }: BoardViewProps) => {
   const columns: TaskStatus[] = ["To Do", "In Progress", "Done"];
-
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "High":
@@ -135,7 +134,7 @@ export const TaskBoardView = ({ tasks, onStatusChange }: BoardViewProps) => {
 
                     <div className="text-[10px] text-muted-foreground flex items-center gap-1">
                       <span className="truncate max-w-[120px]">
-                        {task.project?.name}
+                        {task.project?.title}
                       </span>
                     </div>
                   </CardContent>

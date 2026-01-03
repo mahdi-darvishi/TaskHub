@@ -7,7 +7,7 @@ export interface TaskType {
   status: TaskStatus;
   priority: TaskPriority;
   dueDate?: string;
-  project?: { name: string; _id: string };
+  project?: { name: string; _id: string; title: string };
   workspace?: { name: string; _id: string };
   assignees: { _id: string; profilePicture?: string; name: string }[];
 }
