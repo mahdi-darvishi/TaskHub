@@ -39,6 +39,7 @@ interface HeaderProps {
 export const Header = ({ onCreateWorkspace }: HeaderProps) => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+
   const { setTheme, theme } = useTheme();
 
   const { workspaces } = useLoaderData() as { workspaces: Workspace[] };
