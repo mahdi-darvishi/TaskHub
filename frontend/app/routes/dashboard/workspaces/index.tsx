@@ -84,7 +84,7 @@ const WorkspaceCard = ({ worksapce }: { worksapce: Workspace }) => {
             </div>
           </div>
 
-          <CardDescription>
+          <CardDescription className="line-clamp-3">
             {worksapce.description || "No description"}
           </CardDescription>
         </CardHeader>
