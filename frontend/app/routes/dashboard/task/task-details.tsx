@@ -21,10 +21,11 @@ import {
 import { useAuth } from "@/provider/auth-context";
 import type { Project, Task } from "@/types/indedx";
 import { formatDistanceToNow } from "date-fns";
-import { Eye, EyeOff, Loader2, Trash2 } from "lucide-react";
+import { Edit, Eye, EyeOff, Loader2, Trash2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { TaskDueDate } from "@/components/task/task-due-date";
 
 const TaskDetails = () => {
   const { user } = useAuth();
@@ -193,11 +194,8 @@ const TaskDetails = () => {
                     })}
                   </span>
                 </div>
-                <div className="text-sm md:text-base font-normal mt-1">
-                  Due Date:{" "}
-                  <span className=" text-muted-foreground">
-                    {format(new Date(task.dueDate), "MMMM d yyyy")}
-                  </span>
+                <div className="">
+                  <TaskDueDate taskId={taskId} dueDate={task.dueDate} />
                 </div>
               </div>
 

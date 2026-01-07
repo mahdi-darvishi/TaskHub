@@ -21,6 +21,7 @@ import {
   watchTask,
   deleteTask,
   getArchivedTasks,
+  updateTaskDueDate,
 } from "../controllers/task.js";
 import authMiddleware from "../middleware/auth-middleware.js";
 
@@ -188,5 +189,15 @@ router.delete(
     }),
   }),
   deleteTask
+);
+
+router.put(
+  "/:taskId/due-date",
+  authMiddleware,
+  validateRequest({
+    params: z.object({ taskId: z.string() }),
+    body: z.object({ dueDate: z.string().optional() }),
+  }),
+  updateTaskDueDate
 );
 export default router;

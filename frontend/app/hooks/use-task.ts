@@ -251,6 +251,28 @@ const useDeleteTaskMutation = () => {
   });
 };
 
+const useUpdateTaskDueDateMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: {
+      taskId: string | undefined;
+      dueDate?: string | null;
+    }) =>
+      updateData(`/tasks/${data.taskId}/due-date`, {
+        dueDate: data.dueDate,
+      }),
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({
+        queryKey: ["task", data._id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["task-activity", data._id],
+      });
+    },
+  });
+};
+
 export {
   useCreateTaskMutation,
   useTaskByIdQuery,
@@ -267,4 +289,5 @@ export {
   useAchievedTaskMutation,
   useGetMyTasksQuery,
   useDeleteTaskMutation,
+  useUpdateTaskDueDateMutation,
 };
