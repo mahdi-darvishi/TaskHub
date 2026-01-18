@@ -6,6 +6,7 @@ import {
   ShieldAlert,
   User as UserIcon,
   UserPlus,
+  Crown,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -69,6 +70,7 @@ export default function MembersPage() {
   }, [workspaceId, refetch]);
 
   const workspace = workspaceData as WorkspaceData;
+  // Check if data is stale (from previous workspace)
   const isDataStale = workspace && workspace._id !== workspaceId;
   const showLoading = isLoading || isFetching || isDataStale;
 
@@ -78,7 +80,7 @@ export default function MembersPage() {
   const filteredMembers = members.filter(
     (m) =>
       m.user?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.user?.email?.toLowerCase().includes(searchQuery.toLowerCase())
+      m.user?.email?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   // --- Helper Functions ---
@@ -96,7 +98,7 @@ export default function MembersPage() {
   const getRoleIcon = (role: string) => {
     switch (role) {
       case "OWNER":
-        return <ShieldAlert className="size-3 mr-1" />;
+        return <Crown className="size-3 mr-1" />;
       case "ADMIN":
         return <Shield className="size-3 mr-1" />;
       default:
@@ -119,7 +121,7 @@ export default function MembersPage() {
   }
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-8 animate-in fade-in duration-300">
+    <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-6 md:space-y-8 animate-in fade-in duration-300 h-full">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
@@ -132,7 +134,10 @@ export default function MembersPage() {
             .
           </p>
         </div>
-        <Button className="gap-2" onClick={() => setIsInviteOpen(true)}>
+        <Button
+          className="gap-2 shrink-0"
+          onClick={() => setIsInviteOpen(true)}
+        >
           <UserPlus className="size-4" />
           Invite Member
         </Button>
@@ -141,75 +146,79 @@ export default function MembersPage() {
       <Separator />
 
       {/* Search & Stats */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4">
         <div className="relative w-full max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
             placeholder="Search by name or email..."
-            className="pl-9"
+            className="pl-9 bg-background/50"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <div className="text-sm text-muted-foreground hidden sm:block">
+        <div className="text-sm text-muted-foreground hidden sm:block whitespace-nowrap">
           Total Members:{" "}
           <span className="font-medium text-foreground">{members.length}</span>
         </div>
       </div>
 
-      {/* List */}
-      <div className="border rounded-xl bg-card shadow-sm overflow-hidden">
+      {/* Members List */}
+      <div className="border rounded-xl bg-card shadow-sm overflow-hidden flex flex-col">
         {/* Table Header */}
-        <div className="grid grid-cols-12 gap-4 p-4 text-xs font-medium text-muted-foreground border-b bg-muted/40">
-          <div className="col-span-6">User</div>
-          <div className="col-span-3">Role</div>
-          <div className="col-span-3 text-right sm:text-left">Joined</div>
+        <div className="grid grid-cols-12 gap-4 p-4 text-xs font-medium text-muted-foreground border-b bg-muted/40 uppercase tracking-wider">
+          <div className="col-span-8 sm:col-span-6">User</div>
+          <div className="col-span-4 sm:col-span-3 text-right sm:text-left">
+            Role
+          </div>
+          <div className="col-span-3 text-right hidden sm:block">Joined</div>
         </div>
 
-        <ScrollArea className="h-[500px]">
+        <ScrollArea className="h-[calc(100vh-320px)] min-h-[400px]">
           {filteredMembers.length > 0 ? (
-            <div className="divide-y">
+            <div className="divide-y divide-border/50">
               {filteredMembers.map((member) => (
                 <div
                   key={member._id}
-                  className="grid grid-cols-12 gap-4 p-4 items-center hover:bg-accent/30 transition-colors"
+                  className="grid grid-cols-12 gap-4 p-4 items-center hover:bg-muted/30 transition-colors group"
                 >
                   {/* User Info */}
-                  <div className="col-span-6 flex items-center gap-3">
-                    <Avatar className="size-9 border">
+                  <div className="col-span-8 sm:col-span-6 flex items-center gap-3 overflow-hidden">
+                    <Avatar className="size-8 sm:size-10 border shadow-sm shrink-0">
                       <AvatarImage
                         src={member.user?.profilePicture}
                         className="object-cover"
                       />
-                      <AvatarFallback className="bg-primary/10 text-primary font-medium">
+                      <AvatarFallback className="bg-primary/10 text-primary font-medium text-xs">
                         {member.user?.name?.charAt(0) || "?"}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="overflow-hidden">
-                      <p className="text-sm font-medium truncate flex items-center gap-2">
-                        {member.user?.name}
+                    <div className="flex flex-col min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className=" text-xs md:text-sm font-medium truncate text-foreground">
+                          {member.user?.name}
+                        </p>
                         {currentUser?._id === member.user?._id && (
                           <Badge
                             variant="secondary"
-                            className="text-[10px] h-4 px-1 rounded-sm"
+                            className="text-[10px] h-4 px-1 rounded-sm shrink-0 bg-primary/10 text-primary hover:bg-primary/20"
                           >
                             You
                           </Badge>
                         )}
-                      </p>
-                      <p className="text-xs text-muted-foreground truncate flex items-center gap-1">
-                        <Mail className="size-3" />
+                      </div>
+                      <p className=" text-[10px] md:text-xs text-muted-foreground truncate flex items-center gap-1.5 mt-0.5">
+                        <Mail className="size-3 shrink-0 opacity-70" />
                         {member.user?.email}
                       </p>
                     </div>
                   </div>
 
                   {/* Role */}
-                  <div className="col-span-3">
+                  <div className="col-span-4 sm:col-span-3 flex justify-end sm:justify-start">
                     <Badge
                       variant="outline"
-                      className={`font-medium py-1 px-2 rounded-md ${getRoleBadgeColor(
-                        member.role
+                      className={`font-medium py-0.5  px-1 md:px-2.5  rounded-full text-[9px] md:text-xs transition-colors ${getRoleBadgeColor(
+                        member.role,
                       )}`}
                     >
                       {getRoleIcon(member.role)}
@@ -218,13 +227,13 @@ export default function MembersPage() {
                   </div>
 
                   {/* Joined Date */}
-                  <div className="col-span-3 flex flex-col items-end sm:items-start gap-0.5">
+                  <div className="col-span-3 hidden sm:flex flex-col items-end gap-0.5">
                     {member.joinedAt ? (
                       <>
                         <span className="text-sm font-medium text-foreground/80">
                           {format(new Date(member.joinedAt), "MMM dd, yyyy")}
                         </span>
-                        <span className="text-[11px] text-muted-foreground capitalize">
+                        <span className="text-[10px] text-muted-foreground capitalize">
                           {formatDistanceToNow(new Date(member.joinedAt), {
                             addSuffix: true,
                           })}
@@ -238,12 +247,15 @@ export default function MembersPage() {
               ))}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">
-              <div className="bg-muted/50 p-4 rounded-full mb-3">
+            <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground h-full">
+              <div className="bg-muted/50 p-4 rounded-full mb-3 ring-1 ring-border">
                 <Search className="size-6 opacity-40" />
               </div>
-              <p className="text-sm">
-                No members found matching "{searchQuery}"
+              <p className="text-sm font-medium text-foreground">
+                No members found
+              </p>
+              <p className="text-xs mt-1">
+                We couldn't find any member matching "{searchQuery}"
               </p>
             </div>
           )}
