@@ -48,42 +48,48 @@ const JoinWorkspace = () => {
             toast.error(message);
           }
         },
-      }
+      },
     );
   };
 
   if (!workspaceId || !inviteCode) {
     return (
-      <div className="flex h-screen items-center justify-center text-red-500">
+      <div className="flex h-screen items-center justify-center text-destructive p-4 text-center">
         Error: Missing invitation details.
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen w-full items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
-      <Card className="w-full max-w-md shadow-lg">
-        <CardHeader className="text-center space-y-4">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-600">
-            <UserPlus className="h-6 w-6" />
+    // Responsive Container: min-h-screen handles content overflow better than h-screen
+    <div className="flex min-h-screen w-full items-center justify-center bg-gray-50 dark:bg-gray-900 p-4 sm:p-6">
+      <Card className="w-full max-w-md shadow-lg border-t-4 border-t-blue-500">
+        <CardHeader className="text-center space-y-4 pb-2">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-blue-100 text-blue-600 mb-2">
+            <UserPlus className="h-7 w-7" />
           </div>
           <div>
-            <CardTitle className="text-2xl">Join Workspace</CardTitle>
-            <CardDescription className="mt-2 text-base">
+            <CardTitle className="text-xl sm:text-2xl font-bold">
+              Join Workspace
+            </CardTitle>
+            <CardDescription className="mt-2 text-sm sm:text-base">
               You've been invited to join a workspace on TaskHub.
             </CardDescription>
           </div>
         </CardHeader>
 
-        <CardContent className="text-center">
-          <div className="rounded-md bg-muted p-3 text-sm font-mono text-muted-foreground break-all">
-            Workspace ID: {workspaceId}
+        <CardContent className="text-center space-y-4">
+          <div className="text-sm text-muted-foreground">
+            Please confirm that you want to accept this invitation.
+          </div>
+          <div className="rounded-lg bg-muted p-3 text-xs sm:text-sm font-mono text-muted-foreground break-all border">
+            ID: {workspaceId}
           </div>
         </CardContent>
 
-        <CardFooter>
+        <CardFooter className="pt-2 pb-6">
           <Button
-            className="w-full"
+            className="w-full text-base py-6"
             size="lg"
             onClick={handleJoin}
             disabled={isPending}

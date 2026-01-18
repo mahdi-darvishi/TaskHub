@@ -19,49 +19,55 @@ const WorkspaceDetails = () => {
   const [isCreateProject, setIsCreateProject] = useState(false);
   const [isInviteMember, setIsInviteMember] = useState(false);
 
-  const { data: workspaces } = useGetWorkspaceQuery(workspaceId!) as {
+  // Consolidated Query: Cleaned up duplicate hook calls
+  const { data, isLoading } = useGetWorkspaceQuery(workspaceId!) as {
     data: WorkspaceResponse;
-  };
-
-  if (!workspaceId) return <div>Workspace not found</div>;
-
-  const { data, isLoading } = useGetWorkspaceQuery(workspaceId) as {
-    data: {
-      workspace: Workspace;
-      projects: Project[];
-    };
     isLoading: boolean;
   };
 
   if (isLoading) return <Loader />;
+  if (!workspaceId || !data)
+    return (
+      <div className="p-8 text-center text-muted-foreground">
+        Workspace not found
+      </div>
+    );
+
+  const { workspace, projects } = data;
 
   return (
-    <div className="space-y-8">
+    // Responsive Container with vertical spacing
+    <div className="space-y-6 md:space-y-8 w-full max-w-[1600px] mx-auto pb-10">
+      {/* Header Section */}
       <WorkspaceHeader
-        workspace={data.workspace}
-        members={data?.workspace.members as any}
+        workspace={workspace}
+        members={workspace.members as any}
         onCreateProject={() => setIsCreateProject(true)}
         onInviteMember={() => setIsInviteMember(true)}
       />
 
-      <ProjectList
-        workspaceId={workspaceId}
-        projects={data.projects}
-        onCreateProject={() => setIsCreateProject(true)}
-      />
+      {/* Projects List Section */}
+      <div className="px-1 md:px-0">
+        <ProjectList
+          workspaceId={workspaceId}
+          projects={projects}
+          onCreateProject={() => setIsCreateProject(true)}
+        />
+      </div>
 
+      {/* Dialogs */}
       <CreateProjectDialog
         isOpen={isCreateProject}
         onOpenChange={setIsCreateProject}
         workspaceId={workspaceId}
-        workspaceMembers={data.workspace.members as any}
+        workspaceMembers={workspace.members as any}
       />
 
       <InviteMemberDialog
         isOpen={isInviteMember}
         onOpenChange={setIsInviteMember}
         workspaceId={workspaceId}
-        inviteCode={workspaces.workspace.inviteCode as string}
+        inviteCode={workspace.inviteCode as string}
       />
     </div>
   );

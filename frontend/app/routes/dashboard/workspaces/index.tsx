@@ -20,7 +20,8 @@ import Loader from "@/components/loader";
 const Workspaces = () => {
   const [isCreatingWorkspace, setIsCreatingWorkspace] = useState(false);
 
-  const { data: worksapces, isLoading } = useGetWorkspacesQuery() as {
+  // Corrected typo: worksapces -> workspaces
+  const { data: workspaces, isLoading } = useGetWorkspacesQuery() as {
     data: Workspace[];
     isLoading: boolean;
   };
@@ -29,28 +30,35 @@ const Workspaces = () => {
 
   return (
     <>
-      <div className="space-y-8 ">
-        <div className=" flex items-center justify-between">
-          <h2 className="text-xl md:text-3xl font-bold ">Workspaces</h2>
+      <div className="space-y-8 p-4 md:p-0">
+        {/* Header: Stack on mobile, Row on desktop */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <h2 className="text-2xl md:text-3xl font-bold">Workspaces</h2>
 
-          <Button onClick={() => setIsCreatingWorkspace(true)}>
+          <Button
+            onClick={() => setIsCreatingWorkspace(true)}
+            className="w-full sm:w-auto"
+          >
             <PlusCircle className="size-4 mr-2" />
-            New Workspaces
+            New Workspace
           </Button>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols- lg:grid-cols-3">
-          {worksapces.map((worksapce) => (
-            <WorkspaceCard key={worksapce._id} worksapce={worksapce} />
+        {/* Responsive Grid: 1 col mobile, 2 cols tablet, 3 cols desktop */}
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          {workspaces.map((workspace) => (
+            <WorkspaceCard key={workspace._id} workspace={workspace} />
           ))}
 
-          {worksapces.length === 0 && (
-            <NoDataFound
-              title="No workspace found"
-              description="Create a new workspace to get started"
-              buttonText="Create Workspaced"
-              buttonAction={() => setIsCreatingWorkspace(true)}
-            />
+          {workspaces.length === 0 && (
+            <div className="col-span-full">
+              <NoDataFound
+                title="No workspace found"
+                description="Create a new workspace to get started"
+                buttonText="Create Workspace"
+                buttonAction={() => setIsCreatingWorkspace(true)}
+              />
+            </div>
           )}
         </div>
       </div>
@@ -62,36 +70,42 @@ const Workspaces = () => {
     </>
   );
 };
-const WorkspaceCard = ({ worksapce }: { worksapce: Workspace }) => {
+
+// Workspace Card Component
+const WorkspaceCard = ({ workspace }: { workspace: Workspace }) => {
   return (
-    <Link to={`/workspaces/${worksapce._id}`}>
-      <Card className="transition-all hover:shadow-md hover:-translate-y-1">
-        <CardHeader className="pb-2 ">
-          <div className="flex items-center justify-between ">
-            <div className="flex gap-2">
-              <WorkspaceAvatar name={worksapce.name} color={worksapce.color} />
-              <div className="">
-                <CardTitle>{worksapce.name}</CardTitle>
-                <span className="text-sm text-muted-foreground">
-                  Created at {format(worksapce.createdAt, "MMM d, yyyy h:mm a")}
+    <Link to={`/workspaces/${workspace._id}`}>
+      <Card className="transition-all hover:shadow-md hover:-translate-y-1 h-full flex flex-col">
+        <CardHeader className="pb-2">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex gap-3 overflow-hidden">
+              <WorkspaceAvatar name={workspace.name} color={workspace.color} />
+              <div className="min-w-0">
+                <CardTitle className="truncate text-base md:text-lg">
+                  {workspace.name}
+                </CardTitle>
+                <span className="text-xs text-muted-foreground block mt-1">
+                  Created {format(new Date(workspace.createdAt), "MMM d, yyyy")}
                 </span>
               </div>
             </div>
 
-            <div className="flex items-center text-muted-foreground">
-              <Users className="size-4 mr-1" />
-              <span className="text-sm">{worksapce.members.length}</span>
+            <div className="flex items-center text-muted-foreground shrink-0 bg-muted/50 px-2 py-1 rounded-md">
+              <Users className="size-3.5 mr-1.5" />
+              <span className="text-xs font-medium">
+                {workspace.members.length}
+              </span>
             </div>
           </div>
 
-          <CardDescription className="line-clamp-3">
-            {worksapce.description || "No description"}
+          <CardDescription className="line-clamp-2 mt-2 text-sm">
+            {workspace.description || "No description provided."}
           </CardDescription>
         </CardHeader>
 
-        <CardContent>
-          <div className="text-sm text-muted-foreground">
-            View workspace details and projects
+        <CardContent className="mt-auto pt-2">
+          <div className="text-xs text-muted-foreground bg-muted/30 p-2 rounded text-center">
+            Click to view details
           </div>
         </CardContent>
       </Card>
