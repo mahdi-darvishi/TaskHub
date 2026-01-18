@@ -25,32 +25,36 @@ const THEME_COLORS = [
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState("appearance");
-
   const { theme, setTheme, color, setColor } = useTheme();
 
-  // آیتم Notifications از اینجا حذف شد
   const menuItems = [{ id: "appearance", label: "Appearance", icon: Palette }];
 
   return (
-    <div className="container max-w-6xl py-8 mx-auto h-full">
-      <div className="flex flex-col space-y-2 mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground">
+    // کانتینر اصلی با پدینگ ریسپانسیو
+    <div className="container max-w-6xl py-6 md:py-10 px-4 mx-auto min-h-full">
+      {/* هدر صفحه */}
+      <div className="flex flex-col space-y-2 mb-6 md:mb-8">
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+          Settings
+        </h1>
+        <p className="text-sm md:text-base text-muted-foreground">
           Customize the appearance of your workspace.
         </p>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-8 h-full">
+      {/* چیدمان اصلی: در موبایل ستونی، در دسکتاپ ردیفی */}
+      <div className="flex flex-col lg:flex-row gap-6 lg:gap-10 h-full">
         {/* --- Sidebar Navigation --- */}
-        <aside className="lg:w-1/5">
-          <nav className="flex space-x-2 lg:flex-col lg:space-x-0 lg:space-y-1">
+        {/* در موبایل عرض کامل، در دسکتاپ 1/5 عرض */}
+        <aside className="w-full lg:w-1/5 overflow-x-auto pb-2 lg:pb-0">
+          <nav className="flex lg:flex-col space-x-2 lg:space-x-0 lg:space-y-1 min-w-max lg:min-w-0">
             {menuItems.map((item) => (
               <Button
                 key={item.id}
                 variant={activeTab === item.id ? "secondary" : "ghost"}
                 className={cn(
-                  "justify-start hover:bg-muted/50",
-                  activeTab === item.id && "bg-muted font-medium"
+                  "justify-start hover:bg-muted/50 whitespace-nowrap", // جلوگیری از شکستن متن در موبایل
+                  activeTab === item.id && "bg-muted font-medium",
                 )}
                 onClick={() => setActiveTab(item.id)}
               >
@@ -62,20 +66,23 @@ export default function SettingsPage() {
         </aside>
 
         {/* --- Main Content Area --- */}
-        <div className="flex-1 lg:max-w-3xl space-y-6">
+        <div className="flex-1 lg:max-w-4xl space-y-6">
           {/* APPEARANCE (Mode + Color) */}
           {activeTab === "appearance" && (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
               {/* 1. Theme Mode (Light/Dark) */}
               <Card>
-                <CardHeader>
-                  <CardTitle>Theme Mode</CardTitle>
-                  <CardDescription>
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg md:text-xl">
+                    Theme Mode
+                  </CardTitle>
+                  <CardDescription className="text-xs md:text-sm">
                     Select the color mode for the dashboard.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-3 gap-4">
+                  {/* در موبایل 1 ستونه (یا اسکرولی)، تبلت/دسکتاپ 3 ستونه */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-8">
                     {/* Light Mode */}
                     <div
                       className="space-y-2 cursor-pointer group"
@@ -86,13 +93,13 @@ export default function SettingsPage() {
                           "items-center rounded-md border-2 p-1 transition-all",
                           theme === "light"
                             ? "border-primary"
-                            : "border-muted group-hover:border-muted-foreground"
+                            : "border-muted group-hover:border-muted-foreground",
                         )}
                       >
-                        <div className="space-y-2 rounded-sm bg-[#ecedef] p-2">
-                          <div className="space-y-2 rounded-md bg-white p-2 shadow-sm">
-                            <div className="h-2 w-20 rounded-lg bg-[#ecedef]" />
-                            <div className="h-2 w-[100px] rounded-lg bg-[#ecedef]" />
+                        <div className="space-y-2 rounded-sm bg-[#ecedef] p-2 aspect-video sm:aspect-auto">
+                          <div className="space-y-2 rounded-md bg-white p-2 shadow-sm h-full">
+                            <div className="h-2 w-1/2 rounded-lg bg-[#ecedef]" />
+                            <div className="h-2 w-3/4 rounded-lg bg-[#ecedef]" />
                           </div>
                         </div>
                       </div>
@@ -112,13 +119,13 @@ export default function SettingsPage() {
                           "items-center rounded-md border-2 p-1 bg-slate-950 transition-all",
                           theme === "dark"
                             ? "border-primary"
-                            : "border-muted group-hover:border-muted-foreground"
+                            : "border-muted group-hover:border-muted-foreground",
                         )}
                       >
-                        <div className="space-y-2 rounded-sm bg-slate-800 p-2">
-                          <div className="space-y-2 rounded-md bg-slate-950 p-2 shadow-sm">
-                            <div className="h-2 w-20 rounded-lg bg-slate-800" />
-                            <div className="h-2 w-[100px] rounded-lg bg-slate-800" />
+                        <div className="space-y-2 rounded-sm bg-slate-800 p-2 aspect-video sm:aspect-auto">
+                          <div className="space-y-2 rounded-md bg-slate-950 p-2 shadow-sm h-full">
+                            <div className="h-2 w-1/2 rounded-lg bg-slate-800" />
+                            <div className="h-2 w-3/4 rounded-lg bg-slate-800" />
                           </div>
                         </div>
                       </div>
@@ -138,13 +145,13 @@ export default function SettingsPage() {
                           "items-center rounded-md border-2 p-1 transition-all",
                           theme === "system"
                             ? "border-primary"
-                            : "border-muted group-hover:border-muted-foreground"
+                            : "border-muted group-hover:border-muted-foreground",
                         )}
                       >
-                        <div className="space-y-2 rounded-sm bg-slate-300 p-2">
-                          <div className="space-y-2 rounded-md bg-slate-600 p-2 shadow-sm">
-                            <div className="h-2 w-20 rounded-lg bg-slate-400" />
-                            <div className="h-2 w-[100px] rounded-lg bg-slate-400" />
+                        <div className="space-y-2 rounded-sm bg-slate-300 p-2 aspect-video sm:aspect-auto">
+                          <div className="space-y-2 rounded-md bg-slate-600 p-2 shadow-sm h-full">
+                            <div className="h-2 w-1/2 rounded-lg bg-slate-400" />
+                            <div className="h-2 w-3/4 rounded-lg bg-slate-400" />
                           </div>
                         </div>
                       </div>
@@ -159,14 +166,17 @@ export default function SettingsPage() {
 
               {/* 2. Theme Color (Primary Color) */}
               <Card>
-                <CardHeader>
-                  <CardTitle>Theme Color</CardTitle>
-                  <CardDescription>
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg md:text-xl">
+                    Theme Color
+                  </CardTitle>
+                  <CardDescription className="text-xs md:text-sm">
                     Select the primary color for buttons, links, and accents.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {/* در موبایل 2 ستونه، در تبلت/دسکتاپ 4 ستونه */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                     {THEME_COLORS.map((item) => (
                       <div
                         key={item.value}
@@ -175,22 +185,22 @@ export default function SettingsPage() {
                           "cursor-pointer flex items-center justify-between rounded-md border-2 p-2 hover:bg-muted/50 transition-all",
                           color === item.value
                             ? "border-primary bg-muted"
-                            : "border-transparent bg-transparent hover:border-muted"
+                            : "border-transparent bg-transparent hover:border-muted",
                         )}
                       >
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 overflow-hidden">
                           <div
                             className={cn(
-                              "h-6 w-6 rounded-full border shadow-sm",
-                              item.color
+                              "h-5 w-5 md:h-6 md:w-6 rounded-full border shadow-sm shrink-0",
+                              item.color,
                             )}
                           />
-                          <span className="text-sm font-medium">
+                          <span className="text-sm font-medium truncate">
                             {item.name}
                           </span>
                         </div>
                         {color === item.value && (
-                          <Check className="h-4 w-4 text-primary" />
+                          <Check className="h-4 w-4 text-primary shrink-0" />
                         )}
                       </div>
                     ))}
