@@ -401,7 +401,7 @@ const inviteUserByEmail = async (req, res) => {
       }
     }
 
-    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    const frontendUrl = process.env.FRONTEND_URL || "https://task-hub-frontend-coral.vercel.app/";
     const inviteLink = `${frontendUrl}/workspaces/join/${workspace._id}/${workspace.inviteCode}`;
 
     const emailHtml = getWorkspaceInvitationTemplate({
