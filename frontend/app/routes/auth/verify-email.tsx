@@ -19,7 +19,7 @@ const VerifyEmail = () => {
 
   // State management for UI status and messages
   const [status, setStatus] = useState<"loading" | "success" | "error">(
-    "loading"
+    "loading",
   );
   const [message, setMessage] = useState("Verifying your email address...");
 
@@ -46,7 +46,7 @@ const VerifyEmail = () => {
         // Display error message from backend or a default one
         setMessage(
           error.response?.data?.message ||
-            "Verification failed or link expired."
+            "Verification failed or link expired.",
         );
       }
     };
@@ -56,7 +56,7 @@ const VerifyEmail = () => {
   }, [token, email]);
 
   return (
-    <div className="min-w-md min-h-screen flex flex-col items-center justify-center bg-muted/40 p-4">
+    <div className="md:min-w-md min-h-screen flex flex-col items-center justify-center bg-muted/40 p-4">
       <Card className="w-full shadow-xl sm:w-[400px]">
         <CardHeader className="text-center mb-2">
           {/* Dynamic Icon based on status */}

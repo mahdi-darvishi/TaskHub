@@ -46,7 +46,7 @@ const SignUp = () => {
       onSuccess: () => {
         // 3. Updated Message: Inform user to check email
         toast.success(
-          "Account created! Please check your email to verify your account."
+          "Account created! Please check your email to verify your account.",
         );
 
         // 4. Redirect to Sign In page so they are ready to login
@@ -61,7 +61,7 @@ const SignUp = () => {
   };
 
   return (
-    <div className=" min-w-md min-h-screen flex flex-col items-center justify-center bg-muted/40 p-4">
+    <div className=" md:min-w-md min-h-screen flex flex-col items-center justify-center bg-muted/40 p-4">
       <Card className="w-full shadow-xl">
         <CardHeader className="text-center mb-5">
           <CardTitle className="text-2xl font-bold">
