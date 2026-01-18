@@ -14,7 +14,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { format, isToday, isThisWeek, parseISO } from "date-fns";
-import { toast } from "sonner"; // یا هر کتابخانه توستی که داری
+import { toast } from "sonner";
 
 // UI Components
 import { Button } from "@/components/ui/button";
@@ -56,13 +56,17 @@ import {
 } from "@/components/ui/alert-dialog";
 
 // Hooks
-import { useWorkspace } from "@/provider/workspace-provider"; // مسیر را چک کن
+import { useWorkspace } from "@/provider/workspace-provider";
 import {
   useGetArchivedTasks,
   useRestoreTaskMutation,
   useDeleteTaskMutation,
 } from "@/hooks/use-task-archive";
+import type { MetaFunction } from "react-router";
 
+export const meta: MetaFunction = () => {
+  return [{ title: "TaskHub - Archives" }];
+};
 // --- Sub-Component: Task Detail Modal ---
 const TaskDetailModal = ({
   task,
@@ -261,7 +265,7 @@ export default function ArchivedPage() {
         onError: (err: any) => {
           toast.error(err.response?.data?.message || "Failed to delete task");
         },
-      }
+      },
     );
   };
 
@@ -466,7 +470,7 @@ export default function ArchivedPage() {
                                     {task.archivedAt
                                       ? format(
                                           parseISO(task.archivedAt),
-                                          "PP p"
+                                          "PP p",
                                         )
                                       : "Unknown date"}
                                   </p>

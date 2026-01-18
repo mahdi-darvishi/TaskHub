@@ -26,7 +26,10 @@ import { useWorkspace } from "@/provider/workspace-provider";
 // Components
 import Loader from "@/components/loader";
 import { InviteMemberDialog } from "@/components/workspace/invite-member-dialog";
-
+import type { MetaFunction } from "react-router";
+export const meta: MetaFunction = () => {
+  return [{ title: "TaskHub - Team Members" }];
+};
 // Types
 interface Member {
   _id: string;

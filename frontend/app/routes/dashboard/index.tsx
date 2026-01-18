@@ -16,7 +16,10 @@ import type {
   WorkspaceProductivityData,
 } from "@/types/indedx";
 import { Briefcase } from "lucide-react";
-import { useNavigate } from "react-router";
+import { useNavigate, type MetaFunction } from "react-router";
+export const meta: MetaFunction = () => {
+  return [{ title: "TaskHub - Dashboard Overview" }];
+};
 
 const Dashboard = () => {
   const { activeWorkspace } = useWorkspace();

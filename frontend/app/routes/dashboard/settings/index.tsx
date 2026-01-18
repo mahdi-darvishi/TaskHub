@@ -11,7 +11,11 @@ import {
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/provider/theme-provider";
+import type { MetaFunction } from "react-router";
 
+export const meta: MetaFunction = () => {
+  return [{ title: "TaskHub - Settings" }];
+};
 const THEME_COLORS = [
   { name: "Zinc", value: "zinc", color: "bg-zinc-950" },
   { name: "Cyan", value: "cyan", color: "bg-cyan-600" },

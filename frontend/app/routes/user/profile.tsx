@@ -23,7 +23,11 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useProfileLogic } from "@/hooks/use-profile-logic";
 import { AlertCircle, Loader, Loader2 } from "lucide-react";
+import type { MetaFunction } from "react-router";
 
+export const meta: MetaFunction = () => {
+  return [{ title: "TaskHub - Profile" }];
+};
 const Profile = () => {
   // Extract everything from the hook
   const {

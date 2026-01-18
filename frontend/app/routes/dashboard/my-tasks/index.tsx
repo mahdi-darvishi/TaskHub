@@ -18,6 +18,10 @@ import { TaskBoardView } from "@/components/myTask/task-board-view";
 import type { TaskStatus } from "@/types/indedx";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import type { MetaFunction } from "react-router";
+export const meta: MetaFunction = () => {
+  return [{ title: "TaskHub - My Tasks" }];
+};
 
 export type DateFilterType = "ALL" | "TODAY" | "WEEK" | "OVERDUE";
 

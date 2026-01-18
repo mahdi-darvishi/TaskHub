@@ -15,7 +15,24 @@ import { AuthProvider } from "./provider/auth-context";
 import { ThemeProvider } from "./provider/theme-provider";
 import { SocketProvider } from "./provider/socket-context";
 import { WorkspaceProvider } from "./provider/workspace-provider";
+import type { MetaFunction } from "react-router";
 
+export const meta: MetaFunction = () => {
+  return [
+    { title: "TaskHub | Professional Project Management" },
+    {
+      name: "description",
+      content:
+        "Stay organized and manage your projects efficiently with TaskHub.",
+    },
+    {
+      tagName: "link",
+      rel: "icon",
+      href: "/favicon.svg",
+      type: "image/svg+xml",
+    },
+  ];
+};
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
