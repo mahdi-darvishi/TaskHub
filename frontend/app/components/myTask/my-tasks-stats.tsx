@@ -19,7 +19,7 @@ interface StatsProps {
 
 export const MyTasksStats = ({ stats }: StatsProps) => {
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
       <StatsCard
         label="Total Tasks"
         value={stats.total}
@@ -51,7 +51,6 @@ export const MyTasksStats = ({ stats }: StatsProps) => {
   );
 };
 
-// Internal Helper Component
 interface StatsCardProps {
   label: string;
   value: number;
@@ -76,16 +75,23 @@ const StatsCard = ({
         ? "border-l-red-500 bg-red-50/20 dark:bg-red-900/10"
         : active
           ? "border-l-blue-500"
-          : "border-l-transparent"
+          : "border-l-transparent",
     )}
   >
-    <CardContent className="p-6 flex items-center justify-between">
+    <CardContent className="p-4 sm:p-6 flex items-center justify-between">
       <div>
-        <p className="text-sm font-medium text-muted-foreground">{label}</p>
-        <h2 className="text-2xl font-bold mt-1">{value}</h2>
+        <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">
+          {label}
+        </p>
+        <h2 className="text-xl sm:text-2xl font-bold mt-1">{value}</h2>
       </div>
-      <div className={cn("p-2.5 rounded-full bg-muted/50", color)}>
-        <Icon className="h-5 w-5" />
+      <div
+        className={cn(
+          "p-2 sm:p-2.5 rounded-full bg-muted/50 hidden sm:block",
+          color,
+        )}
+      >
+        <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
       </div>
     </CardContent>
   </Card>

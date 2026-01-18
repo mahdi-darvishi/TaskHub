@@ -40,24 +40,24 @@ export const TaskListView = ({
       t.dueDate &&
       isPast(new Date(t.dueDate)) &&
       !isToday(new Date(t.dueDate)) &&
-      t.status !== "Done"
+      t.status !== "Done",
   );
   const today = tasks.filter(
-    (t) => t.dueDate && isToday(new Date(t.dueDate)) && t.status !== "Done"
+    (t) => t.dueDate && isToday(new Date(t.dueDate)) && t.status !== "Done",
   );
   const tomorrow = tasks.filter(
-    (t) => t.dueDate && isTomorrow(new Date(t.dueDate)) && t.status !== "Done"
+    (t) => t.dueDate && isTomorrow(new Date(t.dueDate)) && t.status !== "Done",
   );
   const upcoming = tasks.filter(
     (t) =>
       (isFuture(new Date(t.dueDate || "")) || !t.dueDate) &&
       !isTomorrow(new Date(t.dueDate || "")) &&
-      t.status !== "Done"
+      t.status !== "Done",
   );
   const done = tasks.filter((t) => t.status === "Done");
 
   return (
-    <div className="space-y-8 pb-10">
+    <div className="space-y-6 sm:space-y-8 pb-10">
       <TaskGroup
         title="Overdue"
         tasks={overdue}
@@ -97,8 +97,6 @@ export const TaskListView = ({
   );
 };
 
-// --- Internal Helper Components ---
-
 const TaskGroup = ({
   title,
   tasks,
@@ -120,8 +118,8 @@ const TaskGroup = ({
     <div className="space-y-3">
       <h3
         className={cn(
-          "text-sm font-semibold flex items-center gap-2",
-          titleColor
+          "text-sm font-semibold flex items-center gap-2 sticky top-0 bg-background/95 backdrop-blur py-2 z-10",
+          titleColor,
         )}
       >
         {title}
@@ -136,17 +134,17 @@ const TaskGroup = ({
         {tasks.map((task: TaskType) => (
           <div
             key={task._id}
-            className="flex flex-col sm:flex-row sm:items-center justify-between p-4 hover:bg-muted/40 transition-colors group gap-4"
+            className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 hover:bg-muted/40 transition-colors group gap-3 sm:gap-4"
           >
-            <div className="flex items-start sm:items-center gap-4 min-w-0">
+            <div className="flex items-start sm:items-center gap-3 sm:gap-4 min-w-0 w-full">
               <button
                 onClick={() =>
                   onStatusChange(
                     task._id,
-                    task.status === "Done" ? "To Do" : "Done"
+                    task.status === "Done" ? "To Do" : "Done",
                   )
                 }
-                className="text-muted-foreground hover:text-primary transition-colors shrink-0 mt-1 sm:mt-0"
+                className="text-muted-foreground hover:text-primary transition-colors shrink-0 mt-0.5 sm:mt-0"
               >
                 {task.status === "Done" ? (
                   <CheckCircle2 className="h-5 w-5 text-green-500" />
@@ -154,25 +152,30 @@ const TaskGroup = ({
                   <Circle className="h-5 w-5" />
                 )}
               </button>
-              <div className="min-w-0 space-y-1">
+              <div className="min-w-0 space-y-1 w-full">
                 <Link
                   to={`/workspaces/${task.workspace?._id}/projects/${task.project?._id}/tasks/${task._id}`}
                   className={cn(
-                    "font-medium block truncate text-sm sm:text-base hover:underline",
+                    "font-medium block truncate text-sm sm:text-base hover:underline w-full",
                     task.status === "Done" &&
-                      "line-through text-muted-foreground"
+                      "line-through text-muted-foreground",
                   )}
                 >
                   {task.title}
                 </Link>
                 <div className="flex items-center flex-wrap gap-2 text-xs text-muted-foreground">
-                  <Badge variant="outline" className="font-normal text-[10px]">
+                  <Badge
+                    variant="outline"
+                    className="font-normal text-[10px] max-w-[120px] truncate"
+                  >
                     {task.project?.title || "No Project"}
                   </Badge>
                   {task.workspace && (
                     <>
-                      <span className="hidden sm:inline">•</span>
-                      <span className="hidden sm:inline">
+                      <span className="hidden sm:inline text-muted-foreground/40">
+                        •
+                      </span>
+                      <span className="hidden sm:inline truncate max-w-[150px]">
                         {task.workspace.name}
                       </span>
                     </>
@@ -181,16 +184,17 @@ const TaskGroup = ({
               </div>
             </div>
 
-            <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-6 shrink-0 w-full sm:w-auto pl-9 sm:pl-0">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground min-w-20 justify-start sm:justify-end">
+            <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-6 shrink-0 w-full sm:w-auto pl-8 sm:pl-0 mt-1 sm:mt-0">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground sm:min-w-20 justify-start sm:justify-end">
                 {task.dueDate && (
                   <>
-                    <Clock className="h-3.5 w-3.5" />
+                    <Clock className="h-3.5 w-3.5 shrink-0" />
                     <span
                       className={cn(
+                        "whitespace-nowrap",
                         isPast(new Date(task.dueDate)) &&
                           task.status !== "Done" &&
-                          "text-destructive font-medium"
+                          "text-destructive font-medium",
                       )}
                     >
                       {format(new Date(task.dueDate), "MMM d")}
@@ -199,52 +203,55 @@ const TaskGroup = ({
                 )}
               </div>
 
-              <PriorityBadge priority={task.priority} />
+              <div className="flex items-center gap-2">
+                <PriorityBadge priority={task.priority} />
 
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Change Status</DropdownMenuLabel>
-                  <DropdownMenuItem
-                    onClick={() => onStatusChange(task._id, "To Do")}
-                  >
-                    To Do
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => onStatusChange(task._id, "In Progress")}
-                  >
-                    In Progress
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => onStatusChange(task._id, "Done")}
-                  >
-                    Done
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <ConfirmDialog
-                    title="Delete Task"
-                    description="Are you sure you want to delete this task? This action cannot be undone."
-                    confirmText="Delete Task"
-                    variant="destructive"
-                    onConfirm={() => onDelete(task)}
-                  >
-                    <DropdownMenuItem
-                      onSelect={(e) => e.preventDefault()}
-                      className="text-red-600 focus:text-red-600 cursor-pointer"
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 sm:opacity-0 group-hover:opacity-100 transition-opacity"
                     >
-                      Delete
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  {/* ... Dropdown Content (Same as before) ... */}
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Change Status</DropdownMenuLabel>
+                    <DropdownMenuItem
+                      onClick={() => onStatusChange(task._id, "To Do")}
+                    >
+                      To Do
                     </DropdownMenuItem>
-                  </ConfirmDialog>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                    <DropdownMenuItem
+                      onClick={() => onStatusChange(task._id, "In Progress")}
+                    >
+                      In Progress
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => onStatusChange(task._id, "Done")}
+                    >
+                      Done
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <ConfirmDialog
+                      title="Delete Task"
+                      description="Are you sure you want to delete this task? This action cannot be undone."
+                      confirmText="Delete Task"
+                      variant="destructive"
+                      onConfirm={() => onDelete(task)}
+                    >
+                      <DropdownMenuItem
+                        onSelect={(e) => e.preventDefault()}
+                        className="text-red-600 focus:text-red-600 cursor-pointer"
+                      >
+                        Delete
+                      </DropdownMenuItem>
+                    </ConfirmDialog>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </div>
           </div>
         ))}
@@ -270,11 +277,11 @@ export const PriorityBadge = ({ priority }: { priority: string }) => {
   return (
     <div
       className={cn(
-        "flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border",
-        (styles as any)[priority] || styles.Low
+        "flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium border shrink-0",
+        (styles as any)[priority] || styles.Low,
       )}
     >
-      <IconComp className="w-3.5 h-3.5" />
+      <IconComp className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
       {priority}
     </div>
   );
