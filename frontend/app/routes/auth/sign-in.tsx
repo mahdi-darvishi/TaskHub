@@ -2,7 +2,7 @@ import { signInSchema } from "@/lib/schema";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -96,6 +96,30 @@ const SignIn = () => {
     verify2FAMutate({ email: emailFor2FA, otp });
   };
 
+  const [timer, setTimer] = useState(600);
+
+  // Effect to handle the countdown interval
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+    }
+
+    // Cleanup interval on component unmount or timer update
+    return () => clearInterval(interval);
+  }, [timer]);
+
+  // Function to format time as MM:SS (e.g., 01:30 or 00:59)
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = time % 60;
+    return `${minutes.toString().padStart(2, "0")}:${seconds
+      .toString()
+      .padStart(2, "0")}`;
+  };
+
   return (
     <div className="md:min-w-md min-h-screen flex flex-col items-center justify-center bg-muted/40 p-4">
       <Card className="w-full shadow-xl max-w-md">
@@ -179,7 +203,7 @@ const SignIn = () => {
           {/* --- STEP 2: OTP FORM --- */}
           {step === "2FA" && (
             <div className="flex flex-col items-center space-y-6 animate-in fade-in slide-in-from-right-8">
-              <div className="flex justify-center w-full">
+              <div className="flex flex-col items-center justify-center w-full space-y-4">
                 <InputOTP
                   maxLength={6}
                   onChange={(val: any) => {
@@ -195,12 +219,25 @@ const SignIn = () => {
                     <InputOTPSlot index={5} />
                   </InputOTPGroup>
                 </InputOTP>
+
+                {/* --- Timer and Resend Section --- */}
+                <div className="text-sm flex items-center gap-2">
+                  {timer > 0 && (
+                    <span className="text-muted-foreground">
+                      expires in{" "}
+                      <span className="font-medium text-foreground">
+                        {formatTime(timer)}
+                      </span>
+                    </span>
+                  )}
+                </div>
+                {/* -------------------------------- */}
               </div>
 
               <div className="w-full space-y-2">
                 <Button
                   className="w-full"
-                  onClick={() => {}}
+                  onClick={() => {}} // Add your verify handler here
                   disabled={isVerifyPending}
                 >
                   {isVerifyPending ? (
