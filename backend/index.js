@@ -18,7 +18,7 @@ app.use(
     methods: ["GET", "POST", "DELETE", "PUT"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
-  })
+  }),
 );
 
 app.use(morgan("dev"));
@@ -60,3 +60,4 @@ const startServer = async () => {
 };
 
 startServer();
+export default app;
