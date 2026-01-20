@@ -60,7 +60,7 @@ npm install
 # Configure your .env file
 npm run dev
 ```
-###🔑 Environment Variables Backend (/backend/.env)
+🔑 Environment Variables Backend (/backend/.env)
 ```
 PORT = 5000
 MONGODB_URI = your_mongodb_connection_string
