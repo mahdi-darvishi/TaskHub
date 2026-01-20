@@ -71,8 +71,6 @@ const SignIn = () => {
   const onLoginSubmit = (values: SigninFormData) => {
     loginMutate(values, {
       onSuccess: (data: any) => {
-        console.log("Login Response:", data);
-
         if (data.twoFactorRequired) {
           setEmailFor2FA(data.email || values.email);
           setStep("2FA");
