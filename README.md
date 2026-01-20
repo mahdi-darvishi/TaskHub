@@ -43,7 +43,7 @@ To run TaskHub locally, follow these steps:
 
 ### 1. Clone the repository
 ```bash
-git clone [https://github.com/mahdi-darvishi/TaskHub.git](https://github.com/mahdi-darvishi/TaskHub.git)
+git clone https://github.com/mahdi-darvishi/TaskHub.git
 cd TaskHub
 ```
 ### 2. Backend Setup
