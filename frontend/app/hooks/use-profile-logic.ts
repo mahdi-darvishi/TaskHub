@@ -81,55 +81,57 @@ export const useProfileLogic = () => {
     }
   }, [user, profileForm]);
 
+  // --- Helper for Security Logout ---
+  const performSecurityLogout = (message: string) => {
+    toast.success(message);
+    setTimeout(() => {
+      logout();
+      navigate("/sign-in");
+    }, 1500);
+  };
+
   // --- Handlers ---
 
-  // Handle Image Upload (Just uploads and sets form value)
+  // Handle Image Upload
   const onAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       uploadImage(file, {
         onSuccess: (data: any) => {
-          // data.filePath is the full Cloudinary URL
           profileForm.setValue("profilePicture", data.filePath, {
             shouldDirty: true,
             shouldValidate: true,
           });
-          toast.success("Image uploaded! Don't forget to save changes.");
+          toast.success("Image uploaded! Click Save Changes to apply.");
         },
         onError: () => toast.error("Failed to upload image"),
       });
     }
   };
 
-  // Handle Profile Update (Saves name and picture to DB)
+  // Handle Profile Update (Now Logs out on success)
   const onProfileSubmit = (values: ProfileFormData) => {
     updateUser(
       { name: values.name, profilePicture: values.profilePicture },
       {
         onSuccess: () => {
-          toast.success("Profile updated successfully");
-          // Reset form with new values to clear "dirty" state
-          profileForm.reset(values);
+          performSecurityLogout("Profile updated. Please log in again.");
         },
         onError: (err: any) => {
           toast.error(
-            err.response?.data?.message || "Failed to update profile"
+            err.response?.data?.message || "Failed to update profile",
           );
         },
-      }
+      },
     );
   };
 
-  // Handle Password Change
+  // Handle Password Change (Logs out on success)
   const onPasswordSubmit = (values: ChangePasswordFormData) => {
     changePass(values, {
       onSuccess: () => {
-        toast.success("Password changed. Logging out...");
         passwordForm.reset();
-        setTimeout(() => {
-          logout();
-          navigate("/sign-in");
-        }, 2000);
+        performSecurityLogout("Password changed. Please log in again.");
       },
       onError: (err: any) => {
         toast.error(err.response?.data?.message || "Failed to change password");
