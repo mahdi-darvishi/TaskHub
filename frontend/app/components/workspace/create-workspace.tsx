@@ -24,6 +24,7 @@ import { Textarea } from "../ui/textarea";
 import { toast } from "sonner";
 import { useNavigate } from "react-router";
 import { useCreateWorkspace } from "@/hooks/use-workspace";
+import { Loader2 } from "lucide-react";
 
 interface CreateWorkspaceProps {
   isCreatingWorkspace: boolean;
@@ -69,7 +70,7 @@ export const CreateWorkspace = ({
       },
       onError: (error: any) => {
         const errorMessage =
-          error.response.data.message || "Failed to create workspace";
+          error.response?.data?.message || "Failed to create workspace";
         toast.error(errorMessage);
       },
     });
@@ -81,75 +82,104 @@ export const CreateWorkspace = ({
       onOpenChange={setIsCreatingWorkspace}
       modal={true}
     >
-      <DialogContent className="max-h-[80vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[450px] w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-lg">
         <DialogHeader>
-          <DialogTitle>Create Workspace</DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl font-semibold">
+            Create New Workspace
+          </DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
-            <div className="space-y-4 py-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Workspace Name" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        {...field}
-                        placeholder="Workspace Description"
-                        rows={3}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="color"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Color</FormLabel>
-                    <FormControl>
-                      <div className="flex gap-3 flex-wrap">
-                        {colorOptions.map((color) => (
-                          <div
-                            key={color}
-                            onClick={() => field.onChange(color)}
-                            className={cn(
-                              "w-6 h-6 rounded-full cursor-pointer hover:opacity-80 transition-all duration-300",
-                              field.value === color &&
-                                "ring-2 ring-offset-2 ring-blue-500"
-                            )}
-                            style={{ backgroundColor: color }}
-                          ></div>
-                        ))}
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-5 py-2"
+          >
+            {/* Name Field */}
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium">
+                    Workspace Name
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="e.g. Design Team"
+                      className="h-10 sm:h-11"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-            <DialogFooter>
-              <Button type="submit" disabled={isPending}>
-                {isPending ? "Creating..." : "Create"}
+            {/* Color Picker */}
+            <FormField
+              control={form.control}
+              name="color"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium">
+                    Theme Color
+                  </FormLabel>
+                  <FormControl>
+                    <div className="flex gap-3 sm:gap-4 flex-wrap justify-start">
+                      {colorOptions.map((color) => (
+                        <div
+                          key={color}
+                          onClick={() => field.onChange(color)}
+                          className={cn(
+                            "w-8 h-8 sm:w-7 sm:h-7 rounded-full cursor-pointer hover:opacity-80 transition-all duration-300 shadow-sm",
+                            field.value === color &&
+                              "ring-2 ring-offset-2 ring-blue-500 scale-110",
+                          )}
+                          style={{ backgroundColor: color }}
+                        ></div>
+                      ))}
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Description Field */}
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium">
+                    Description (Optional)
+                  </FormLabel>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      placeholder="What is this workspace for?"
+                      className="resize-none min-h-20 sm:min-h-[100px]"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <DialogFooter className="pt-2 sm:pt-4">
+              <Button
+                type="submit"
+                disabled={isPending}
+                className="w-full sm:w-auto min-w-[120px]"
+              >
+                {isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  "Create Workspace"
+                )}
               </Button>
             </DialogFooter>
           </form>
