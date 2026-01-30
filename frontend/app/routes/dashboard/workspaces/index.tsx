@@ -11,7 +11,7 @@ import { CreateWorkspace } from "@/components/workspace/create-workspace";
 import WorkspaceAvatar from "@/components/workspace/workspace-avatar";
 import { useGetWorkspacesQuery } from "@/hooks/use-workspace";
 import type { Workspace } from "@/types/indedx";
-import { PlusCircle, Users } from "lucide-react";
+import { ArrowRight, PlusCircle, Users } from "lucide-react";
 import { useState } from "react";
 import { Link, type MetaFunction } from "react-router";
 import { format } from "date-fns";
@@ -77,38 +77,52 @@ const Workspaces = () => {
 // Workspace Card Component
 const WorkspaceCard = ({ workspace }: { workspace: Workspace }) => {
   return (
-    <Link to={`/workspaces/${workspace._id}`}>
-      <Card className="transition-all hover:shadow-md hover:-translate-y-1 h-full flex flex-col">
-        <CardHeader className="pb-2">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex gap-3 overflow-hidden">
-              <WorkspaceAvatar name={workspace.name} color={workspace.color} />
-              <div className="min-w-0">
-                <CardTitle className="truncate text-base md:text-lg">
+    <Link to={`/workspaces/${workspace._id}`} className="block h-full group">
+      <Card className="h-full flex flex-col transition-all duration-300 hover:shadow-md hover:border-primary/50 active:scale-[0.98]">
+        {/* Header Section */}
+        <CardHeader className="p-3 sm:p-5 pb-2 space-y-0">
+          <div className="flex items-start justify-between gap-3">
+            {/* Avatar & Title Group */}
+            <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 overflow-hidden">
+              <div className="shrink-0">
+                <WorkspaceAvatar
+                  name={workspace.name}
+                  color={workspace.color}
+                  // className="size-8 sm:size-10 text-xs sm:text-sm"
+                />
+              </div>
+
+              <div className="min-w-0 flex flex-col">
+                <CardTitle className="truncate text-sm sm:text-base md:text-lg font-semibold group-hover:text-primary transition-colors">
                   {workspace.name}
                 </CardTitle>
-                <span className="text-xs text-muted-foreground block mt-1">
+                <span className="text-[10px] sm:text-xs text-muted-foreground truncate">
                   Created {format(new Date(workspace.createdAt), "MMM d, yyyy")}
                 </span>
               </div>
             </div>
 
-            <div className="flex items-center text-muted-foreground shrink-0 bg-muted/50 px-2 py-1 rounded-md">
-              <Users className="size-3.5 mr-1.5" />
-              <span className="text-xs font-medium">
+            {/* Members Badge */}
+            <div className="shrink-0 flex items-center bg-muted/50 text-muted-foreground px-2 py-1 rounded-md border border-transparent group-hover:border-border transition-colors">
+              <Users className="size-3 sm:size-3.5 mr-1.5" />
+              <span className="text-[10px] sm:text-xs font-medium">
                 {workspace.members.length}
               </span>
             </div>
           </div>
 
-          <CardDescription className="line-clamp-2 mt-2 text-sm">
-            {workspace.description || "No description provided."}
+          {/* Description */}
+          <CardDescription className="line-clamp-2 mt-3 text-xs sm:text-sm leading-relaxed">
+            {workspace.description ||
+              "No description provided for this workspace."}
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="mt-auto pt-2">
-          <div className="text-xs text-muted-foreground bg-muted/30 p-2 rounded text-center">
-            Click to view details
+        {/* Footer / Action Area */}
+        <CardContent className="mt-auto p-3 sm:p-5 pt-0">
+          <div className="flex items-center justify-center gap-2 text-xs font-medium text-muted-foreground bg-muted/30 p-2 rounded-lg group-hover:bg-primary/5 group-hover:text-primary transition-colors">
+            <span>View Details</span>
+            <ArrowRight className="size-3 -ml-1 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
           </div>
         </CardContent>
       </Card>
