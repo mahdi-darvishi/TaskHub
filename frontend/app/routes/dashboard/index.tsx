@@ -82,7 +82,7 @@ const Dashboard = () => {
               {completedProjectsCount}
             </span>
             <span className="text-xs sm:text-sm text-muted-foreground font-medium">
-              projects completed
+              Task completed
             </span>
           </div>
         </div>
