@@ -4,14 +4,13 @@ import {
   Search,
   RefreshCcw,
   Trash2,
-  Filter,
-  Eye,
   Clock,
   Tag,
   AlignLeft,
   Loader2,
   AlertTriangle,
-  Calendar,
+  X,
+  User as UserIcon,
 } from "lucide-react";
 import { format, isToday, isThisWeek, parseISO } from "date-fns";
 import { toast } from "sonner";
@@ -34,7 +33,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
@@ -63,10 +61,12 @@ import {
   useDeleteTaskMutation,
 } from "@/hooks/use-task-archive";
 import type { MetaFunction } from "react-router";
+import { cn } from "@/lib/utils";
 
 export const meta: MetaFunction = () => {
   return [{ title: "TaskHub - Archives" }];
 };
+
 // --- Sub-Component: Task Detail Modal ---
 const TaskDetailModal = ({
   task,
@@ -87,109 +87,139 @@ const TaskDetailModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <div className="flex items-center justify-between mr-8">
-            <div className="flex items-center gap-2">
-              <Badge variant="outline">
-                {task.project?.title || "Unknown Project"}
-              </Badge>
-              <Badge
-                className={
-                  task.status === "Done"
-                    ? "bg-green-100 text-green-700 hover:bg-green-100 border-green-200"
-                    : "bg-secondary text-secondary-foreground"
-                }
-              >
-                {task.status}
-              </Badge>
+      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
+        {/* Header */}
+        <DialogHeader className="p-6 pb-2 border-b bg-muted/10">
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-1.5">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="outline" className="bg-background">
+                  {task.project?.title || "Unknown Project"}
+                </Badge>
+                <Badge
+                  className={cn(
+                    "border-transparent",
+                    task.status === "Done"
+                      ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                      : "bg-secondary text-secondary-foreground",
+                  )}
+                >
+                  {task.status}
+                </Badge>
+              </div>
+              <DialogTitle className="text-xl font-bold leading-tight">
+                {task.title}
+              </DialogTitle>
             </div>
-            <span className="text-xs text-muted-foreground flex items-center gap-1">
-              <Clock className="size-3" />
-              Archived{" "}
-              {task.archivedAt
-                ? format(parseISO(task.archivedAt), "PP p")
-                : "Unknown date"}
-            </span>
+            {/* Close button handled by Dialog primitive, but we can add a custom one if needed */}
           </div>
-          <DialogTitle className="text-xl mt-2">{task.title}</DialogTitle>
-          <DialogDescription className="flex items-center gap-2 mt-1">
-            Archived by
-            {task.archivedBy ? (
-              <span className="font-medium text-foreground flex items-center gap-1">
-                <Avatar className="size-5 border">
+
+          <div className="flex items-center gap-3 text-xs text-muted-foreground mt-4">
+            <div className="flex items-center gap-1.5 bg-muted/50 px-2 py-1 rounded-md">
+              <Clock className="size-3.5" />
+              <span>
+                Archived{" "}
+                {task.archivedAt
+                  ? format(parseISO(task.archivedAt), "PP p")
+                  : "N/A"}
+              </span>
+            </div>
+
+            {task.archivedBy && (
+              <div className="flex items-center gap-1.5 bg-muted/50 px-2 py-1 rounded-md">
+                <Avatar className="size-4">
                   <AvatarImage src={task.archivedBy.profilePicture} />
-                  <AvatarFallback className="text-[9px]">
-                    {task.archivedBy.name?.charAt(0) || "U"}
+                  <AvatarFallback>
+                    {task.archivedBy.name?.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
-                {task.archivedBy.name}
-              </span>
-            ) : (
-              "System / Auto"
+                <span>{task.archivedBy.name}</span>
+              </div>
             )}
-          </DialogDescription>
+          </div>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
-          <div className="space-y-2">
-            <h4 className="text-sm font-medium flex items-center gap-2 text-muted-foreground">
-              <AlignLeft className="size-4" /> Description
-            </h4>
-            <div className="bg-muted/30 p-3 rounded-lg text-sm leading-relaxed border min-h-[80px]">
-              {task.description || (
-                <span className="text-muted-foreground italic">
-                  No description provided.
-                </span>
-              )}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <h4 className="text-sm font-medium text-muted-foreground">
-                Priority
+        {/* Content (Scrollable) */}
+        <ScrollArea className="flex-1 p-6">
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium flex items-center gap-2 text-foreground/80">
+                <AlignLeft className="size-4" /> Description
               </h4>
-              <Badge variant="secondary" className="font-normal">
-                {task.priority}
-              </Badge>
-            </div>
-            <div className="space-y-1">
-              <h4 className="text-sm font-medium text-muted-foreground">
-                Tags
-              </h4>
-              <div className="flex gap-1 flex-wrap">
-                {task.tags && task.tags.length > 0 ? (
-                  task.tags.map((tag: string) => (
-                    <Badge key={tag} variant="outline" className="text-xs">
-                      {tag}
-                    </Badge>
-                  ))
-                ) : (
-                  <span className="text-xs text-muted-foreground">-</span>
+              <div className="bg-muted/30 p-4 rounded-lg text-sm leading-relaxed border min-h-[100px] whitespace-pre-wrap">
+                {task.description || (
+                  <span className="text-muted-foreground italic">
+                    No description provided.
+                  </span>
                 )}
               </div>
             </div>
-          </div>
-        </div>
 
-        <DialogFooter className="gap-2 sm:justify-between">
-          <Button variant="ghost" onClick={onClose}>
-            Close
-          </Button>
-          <div className="flex gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5 p-3 rounded-lg border bg-card/50">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Priority
+                </h4>
+                <Badge
+                  variant={
+                    task.priority === "High"
+                      ? "destructive"
+                      : task.priority === "Medium"
+                        ? "default"
+                        : "secondary"
+                  }
+                >
+                  {task.priority}
+                </Badge>
+              </div>
+
+              <div className="space-y-1.5 p-3 rounded-lg border bg-card/50">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Tags
+                </h4>
+                <div className="flex gap-1.5 flex-wrap">
+                  {task.tags && task.tags.length > 0 ? (
+                    task.tags.map((tag: string) => (
+                      <Badge key={tag} variant="outline" className="text-xs">
+                        {tag}
+                      </Badge>
+                    ))
+                  ) : (
+                    <span className="text-xs text-muted-foreground">
+                      No tags
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </ScrollArea>
+
+        {/* Footer */}
+        <DialogFooter className="p-4 border-t bg-muted/10 gap-2 sm:gap-0">
+          <div className="flex flex-col-reverse sm:flex-row gap-2 w-full sm:w-auto sm:justify-between">
+            <Button
+              variant="ghost"
+              onClick={onClose}
+              className="w-full sm:w-auto"
+            >
+              Close
+            </Button>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <Button
               variant="outline"
-              className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+              className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 w-full sm:w-auto"
               onClick={() => {
                 onClose();
                 onDelete(task);
               }}
             >
-              <Trash2 className="size-4" /> Delete
+              <Trash2 className="size-4" /> Delete Forever
             </Button>
             <Button
-              className="gap-2"
+              className="gap-2 w-full sm:w-auto"
               onClick={() => onRestore(task._id)}
               disabled={isRestoring}
             >
@@ -269,8 +299,6 @@ export default function ArchivedPage() {
     );
   };
 
-  // --- Logic: Extract unique projects for filter dropdown ---
-  // (Optional: If you have a separate project list hook, use that instead)
   const uniqueProjects = useMemo(() => {
     const projectsMap = new Map();
     tasks.forEach((t) => {
@@ -281,7 +309,6 @@ export default function ArchivedPage() {
     return Array.from(projectsMap.entries());
   }, [tasks]);
 
-  // --- Logic: Group Tasks by Date ---
   const groupedTasks = useMemo(() => {
     if (!tasks || tasks.length === 0) return [];
 
@@ -292,7 +319,7 @@ export default function ArchivedPage() {
     };
 
     tasks.forEach((task) => {
-      const dateStr = task.archivedAt || task.updatedAt; // Fallback to updatedAt
+      const dateStr = task.archivedAt || task.updatedAt;
       if (!dateStr) {
         groups["Older"].push(task);
         return;
@@ -313,233 +340,262 @@ export default function ArchivedPage() {
   }, [tasks]);
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-8 animate-in fade-in duration-500 min-h-screen bg-background">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col h-full p-4 sm:p-6 max-w-6xl mx-auto space-y-6 animate-in fade-in duration-300">
+      {/* --- Header --- */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shrink-0">
         <div className="flex items-center gap-3">
-          <div className="bg-orange-100 dark:bg-orange-900/20 p-2.5 rounded-xl border border-orange-200 dark:border-orange-800">
+          <div className="bg-orange-100 dark:bg-orange-900/20 p-2.5 rounded-xl border border-orange-200 dark:border-orange-800 shrink-0">
             <Archive className="size-6 text-orange-600 dark:text-orange-400" />
           </div>
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Archives</h1>
             <p className="text-muted-foreground text-sm">
-              Manage and restore your previously completed or canceled items.
+              View and manage archived items.
             </p>
           </div>
         </div>
       </div>
 
-      {/* Filters & Controls */}
-      <div className="flex flex-col md:flex-row gap-4 items-end md:items-center justify-between bg-card p-4 rounded-xl border shadow-sm">
+      {/* --- Filters Bar --- */}
+      <div className="flex flex-col md:flex-row gap-4 bg-card p-4 rounded-xl border shadow-sm shrink-0">
         {/* Search */}
-        <div className="relative w-full md:w-96">
+        <div className="relative w-full md:w-80 lg:w-96">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
-            placeholder="Search archived items..."
-            className="pl-9 bg-background"
+            placeholder="Search archives..."
+            className="pl-9 bg-background w-full"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
 
-        {/* Dropdowns */}
-        <div className="flex items-start md:items-center gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
-          <Filter className="size-4 text-muted-foreground mr-1" />
+        {/* Divider (Desktop) */}
+        <div className="hidden md:block w-px bg-border h-10 mx-2" />
 
-          <div className="flex gap-2 items-center flex-col md:flex-row">
-            <Select value={filterProject} onValueChange={setFilterProject}>
-              <SelectTrigger className="w-[140px] h-9 text-xs">
-                <SelectValue placeholder="All Projects" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Projects</SelectItem>
-                {uniqueProjects.map(([id, title]) => (
-                  <SelectItem key={id} value={id}>
-                    {title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        {/* Filters Grid */}
+        <div className="grid grid-cols-2 md:flex items-center gap-2 w-full">
+          <Select value={filterProject} onValueChange={setFilterProject}>
+            <SelectTrigger className="w-full md:w-[150px] h-10">
+              <SelectValue placeholder="Project" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Projects</SelectItem>
+              {uniqueProjects.map(([id, title]) => (
+                <SelectItem key={id} value={id}>
+                  {title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-[120px] h-9 text-xs">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="Done">Done</SelectItem>
-                <SelectItem value="To Do">To Do</SelectItem>
-                <SelectItem value="In Progress">In Progress</SelectItem>
-                <SelectItem value="Canceled">Canceled</SelectItem>
-              </SelectContent>
-            </Select>
+          <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <SelectTrigger className="w-full md:w-[130px] h-10">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="Done">Done</SelectItem>
+              <SelectItem value="To Do">To Do</SelectItem>
+              <SelectItem value="In Progress">In Progress</SelectItem>
+              <SelectItem value="Canceled">Canceled</SelectItem>
+            </SelectContent>
+          </Select>
 
-            <Select value={filterSort} onValueChange={setFilterSort}>
-              <SelectTrigger className="w-[130px] h-9 text-xs">
-                <SelectValue placeholder="Sort" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="newest">Newest First</SelectItem>
-                <SelectItem value="oldest">Oldest First</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <Select value={filterSort} onValueChange={setFilterSort}>
+            <SelectTrigger className="col-span-2 md:col-span-1 w-full md:w-[130px] h-10">
+              <SelectValue placeholder="Sort" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">Newest First</SelectItem>
+              <SelectItem value="oldest">Oldest First</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Clear Filters (Only show if filters active) */}
+          {(filterProject !== "all" ||
+            filterStatus !== "all" ||
+            searchQuery) && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="ml-auto shrink-0 hidden md:flex"
+              onClick={() => {
+                setFilterProject("all");
+                setFilterStatus("all");
+                setSearchQuery("");
+              }}
+            >
+              <X className="size-4" />
+            </Button>
+          )}
         </div>
       </div>
 
-      {/* Content Area */}
-      <ScrollArea className="h-[600px] pr-4">
-        {isLoading ? (
-          <div className="flex flex-col items-center justify-center h-64 gap-2 text-muted-foreground">
-            <Loader2 className="size-8 animate-spin text-primary" />
-            <p className="text-sm">Loading archived tasks...</p>
-          </div>
-        ) : groupedTasks.length > 0 ? (
-          <div className="space-y-8">
-            {groupedTasks.map(([groupName, groupTasks]) => (
-              <div key={groupName} className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <Badge
-                    variant="outline"
-                    className="px-3 py-1 text-sm font-medium bg-muted/50 text-muted-foreground border-transparent"
-                  >
-                    {groupName}
-                  </Badge>
-                  <Separator className="flex-1" />
-                </div>
-
-                <div className="grid grid-cols-1 gap-3">
-                  {groupTasks.map((task) => (
-                    <div
-                      key={task._id}
-                      onClick={() => setSelectedTask(task)}
-                      className="group relative flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-xl border bg-card hover:shadow-md hover:border-primary/40 transition-all duration-200 cursor-pointer"
+      {/* --- Content Area --- */}
+      <ScrollArea className="flex-1 border rounded-xl bg-muted/5 shadow-inner">
+        <div className="p-4 sm:p-6 min-h-full">
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center h-64 gap-3 text-muted-foreground">
+              <Loader2 className="size-8 animate-spin text-primary" />
+              <p className="text-sm font-medium">Loading archives...</p>
+            </div>
+          ) : groupedTasks.length > 0 ? (
+            <div className="space-y-8 pb-10">
+              {groupedTasks.map(([groupName, groupTasks]) => (
+                <div key={groupName} className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <Badge
+                      variant="secondary"
+                      className="px-3 py-1 text-sm font-medium border bg-background"
                     >
-                      {/* Left: Info */}
-                      <div className="flex items-start gap-4 w-full sm:w-auto">
-                        <div className="mt-1 bg-muted/50 p-2.5 rounded-lg group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                          <Archive className="size-5 text-muted-foreground group-hover:text-primary" />
+                      {groupName}
+                    </Badge>
+                    <Separator className="flex-1" />
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-3">
+                    {groupTasks.map((task) => (
+                      <div
+                        key={task._id}
+                        onClick={() => setSelectedTask(task)}
+                        className="group relative flex flex-col sm:flex-row gap-4 p-4 rounded-xl border bg-card hover:shadow-md hover:border-primary/50 transition-all duration-200 cursor-pointer"
+                      >
+                        {/* Icon */}
+                        <div className="hidden sm:flex mt-1 bg-muted p-2.5 rounded-lg shrink-0 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                          <Archive className="size-5 text-muted-foreground" />
                         </div>
 
-                        <div className="space-y-1.5">
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                        {/* Content */}
+                        <div className="flex-1 min-w-0 space-y-2">
+                          <div className="flex items-center justify-between gap-2">
+                            <h3 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
                               {task.title}
                             </h3>
                             <Badge
-                              variant="secondary"
-                              className="text-[10px] h-5 px-1.5 font-normal rounded-md"
+                              variant="outline"
+                              className="text-[10px] h-5 px-1.5 shrink-0"
                             >
                               {task.status}
                             </Badge>
                           </div>
 
-                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                            <span className="flex items-center gap-1.5">
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
+                            <span className="flex items-center gap-1.5 truncate">
                               <Tag className="size-3" />
                               {task.project?.title || "Unknown Project"}
                             </span>
 
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <span
-                                    className="flex items-center gap-1.5 hover:text-foreground transition-colors"
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    {task.archivedBy ? (
-                                      <>
-                                        <Avatar className="size-4 border">
-                                          <AvatarImage
-                                            src={task.archivedBy.profilePicture}
-                                          />
-                                          <AvatarFallback className="text-[8px]">
-                                            {task.archivedBy.name?.charAt(0)}
-                                          </AvatarFallback>
-                                        </Avatar>
-                                        Archived by{" "}
-                                        {task.archivedBy.name?.split(" ")[0]}
-                                      </>
-                                    ) : (
-                                      <span>Archived (Auto)</span>
-                                    )}
-                                  </span>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>
-                                    {task.archivedAt
-                                      ? format(
-                                          parseISO(task.archivedAt),
-                                          "PP p",
-                                        )
-                                      : "Unknown date"}
-                                  </p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
+                            <span className="flex items-center gap-1.5 truncate">
+                              <Clock className="size-3" />
+                              {task.archivedAt
+                                ? format(
+                                    parseISO(task.archivedAt),
+                                    "MMM d, yyyy",
+                                  )
+                                : "N/A"}
+                            </span>
+
+                            {task.archivedBy && (
+                              <span className="flex items-center gap-1.5 truncate">
+                                <Avatar className="size-3.5">
+                                  <AvatarImage
+                                    className="object-cover"
+                                    src={task.archivedBy.profilePicture}
+                                  />
+                                  <AvatarFallback className="text-[6px]">
+                                    {task.archivedBy.name?.charAt(0)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="max-w-[100px] truncate">
+                                  {task.archivedBy.name}
+                                </span>
+                              </span>
+                            )}
                           </div>
                         </div>
-                      </div>
 
-                      {/* Right: Actions */}
-                      <div className="flex items-center gap-2 mt-4 sm:mt-0 w-full sm:w-auto justify-end">
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          className="text-xs h-8 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all"
-                          disabled={isRestoring}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleRestore(task._id);
-                          }}
-                        >
-                          {isRestoring && selectedTask?._id === task._id ? (
-                            <Loader2 className="size-3.5 mr-1.5 animate-spin" />
-                          ) : (
-                            <RefreshCcw className="size-3.5 mr-1.5" />
-                          )}
-                          Restore
-                        </Button>
+                        {/* Desktop Actions (Hover only) */}
+                        <div className="hidden sm:flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity self-center pl-4 border-l">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-muted-foreground hover:text-primary"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleRestore(task._id);
+                                  }}
+                                >
+                                  <RefreshCcw className="size-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Restore</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
 
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-red-600 hover:bg-red-50 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setTaskToDelete(task);
-                          }}
-                        >
-                          <Trash2 className="size-4" />
-                        </Button>
-
-                        <div className="sm:hidden text-muted-foreground">
-                          <Eye className="size-4" />
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-muted-foreground hover:text-red-600"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setTaskToDelete(task);
+                                  }}
+                                >
+                                  <Trash2 className="size-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Delete Forever</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         </div>
+
+                        {/* Mobile Indicator (Chevron) */}
+                        {/* <div className="sm:hidden absolute top-4 right-4 text-muted-foreground/50">
+                            <ChevronRight className="size-4" />
+                        </div> */}
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full min-h-[300px] text-center opacity-60">
+              <div className="bg-background border p-4 rounded-full mb-4 shadow-sm">
+                {searchQuery ? (
+                  <Search className="size-8 text-muted-foreground" />
+                ) : (
+                  <Archive className="size-8 text-muted-foreground" />
+                )}
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center h-full py-20 text-center opacity-60">
-            <div className="bg-muted p-4 rounded-full mb-4">
-              {searchQuery ? (
-                <Search className="size-8" />
-              ) : (
-                <Archive className="size-8" />
+              <h3 className="font-semibold text-lg">No archived tasks found</h3>
+              <p className="text-sm max-w-xs mx-auto mt-2 text-muted-foreground">
+                {searchQuery
+                  ? "Try adjusting your filters or search query."
+                  : "Items you archive will appear here safely for future reference."}
+              </p>
+              {(filterProject !== "all" || filterStatus !== "all") && (
+                <Button
+                  variant="link"
+                  onClick={() => {
+                    setFilterProject("all");
+                    setFilterStatus("all");
+                    setSearchQuery("");
+                  }}
+                  className="mt-2"
+                >
+                  Clear all filters
+                </Button>
               )}
             </div>
-            <h3 className="font-semibold text-lg">No archived tasks found</h3>
-            <p className="text-sm max-w-xs mx-auto mt-1">
-              {searchQuery
-                ? "Try adjusting your filters or search query."
-                : "Items you archive will appear here safely for future reference."}
-            </p>
-          </div>
-        )}
+          )}
+        </div>
       </ScrollArea>
 
       {/* Detail Modal */}
