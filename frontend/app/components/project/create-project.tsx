@@ -1,5 +1,4 @@
 import { projectSchema } from "@/lib/schema";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -32,12 +31,13 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Button } from "../ui/button";
 
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Loader2 } from "lucide-react";
 import { Calendar } from "../ui/calendar";
 import { Checkbox } from "../ui/checkbox";
 import { useCreateProject } from "@/hooks/use-project";
 import { toast } from "sonner";
 import { ProjectStatus, type MemberProps } from "@/types/indedx";
+import { cn } from "@/lib/utils";
 
 interface CreateProjectDialogProps {
   isOpen: boolean;
@@ -83,26 +83,33 @@ export const CreateProjectDialog = ({
           onOpenChange(false);
         },
         onError: (error: any) => {
-          const errorMessage = error.response.data.message;
+          const errorMessage =
+            error.response?.data?.message || "Failed to create project";
           toast.error(errorMessage);
           console.log(error);
         },
-      }
+      },
     );
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[720px]">
+      <DialogContent className="sm:max-w-[650px] w-[95vw] max-h-[90vh] overflow-y-auto p-4 sm:p-6 rounded-lg">
         <DialogHeader>
-          <DialogTitle>Create Project</DialogTitle>
-          <DialogDescription>
-            Create a new project to get started
+          <DialogTitle className="text-xl font-bold">
+            Create Project
+          </DialogTitle>
+          <DialogDescription className="text-sm">
+            Fill in the details below to start a new project.
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-4 sm:space-y-5"
+          >
+            {/* Title */}
             <FormField
               control={form.control}
               name="title"
@@ -110,41 +117,49 @@ export const CreateProjectDialog = ({
                 <FormItem>
                   <FormLabel>Project Title</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Project Title" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Project Description</FormLabel>
-                  <FormControl>
-                    <Textarea
+                    <Input
                       {...field}
-                      placeholder="Project Description"
-                      rows={3}
+                      placeholder="e.g. Website Redesign"
+                      className="h-10 sm:h-11"
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
+            {/* Description */}
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      placeholder="Describe the project goals..."
+                      rows={3}
+                      className="resize-none min-h-20"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Status */}
             <FormField
               control={form.control}
               name="status"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Project Status</FormLabel>
+                  <FormLabel>Status</FormLabel>
                   <FormControl>
                     <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select Project Status" />
+                      <SelectTrigger className="w-full h-10 sm:h-11">
+                        <SelectValue placeholder="Select Status" />
                       </SelectTrigger>
-
                       <SelectContent>
                         {Object.values(ProjectStatus).map((status) => (
                           <SelectItem key={status} value={status}>
@@ -159,93 +174,98 @@ export const CreateProjectDialog = ({
               )}
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Dates Row */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="startDate"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="flex flex-col">
                     <FormLabel>Start Date</FormLabel>
-                    <FormControl>
-                      <Popover modal={true}>
-                        <PopoverTrigger asChild>
+                    <Popover modal={true}>
+                      <PopoverTrigger asChild>
+                        <FormControl>
                           <Button
                             variant={"outline"}
-                            className={
-                              "w-full justify-start text-left font-normal" +
-                              (!field.value ? "text-muted-foreground" : "")
-                            }
+                            className={cn(
+                              "w-full pl-3 text-left font-normal h-10 sm:h-11",
+                              !field.value && "text-muted-foreground",
+                            )}
                           >
-                            <CalendarIcon className="size-4 mr-2" />
                             {field.value ? (
-                              format(new Date(field.value), "PPPP")
+                              format(new Date(field.value), "PP")
                             ) : (
                               <span>Pick a date</span>
                             )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
-                        </PopoverTrigger>
-
-                        <PopoverContent>
-                          <Calendar
-                            mode="single"
-                            selected={
-                              field.value ? new Date(field.value) : undefined
-                            }
-                            onSelect={(date) => {
-                              field.onChange(date?.toISOString() || undefined);
-                            }}
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </FormControl>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={
+                            field.value ? new Date(field.value) : undefined
+                          }
+                          onSelect={(date) =>
+                            field.onChange(date?.toISOString() || "")
+                          }
+                          disabled={(date) => date < new Date("1900-01-01")}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={form.control}
                 name="dueDate"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="flex flex-col">
                     <FormLabel>Due Date</FormLabel>
-                    <FormControl>
-                      <Popover modal={true}>
-                        <PopoverTrigger asChild>
+                    <Popover modal={true}>
+                      <PopoverTrigger asChild>
+                        <FormControl>
                           <Button
                             variant={"outline"}
-                            className={
-                              "w-full justify-start text-left font-normal" +
-                              (!field.value ? "text-muted-foreground" : "")
-                            }
+                            className={cn(
+                              "w-full pl-3 text-left font-normal h-10 sm:h-11",
+                              !field.value && "text-muted-foreground",
+                            )}
                           >
-                            <CalendarIcon className="size-4 mr-2" />
                             {field.value ? (
-                              format(new Date(field.value), "PPPP")
+                              format(new Date(field.value), "PP")
                             ) : (
                               <span>Pick a date</span>
                             )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
-                        </PopoverTrigger>
-
-                        <PopoverContent>
-                          <Calendar
-                            mode="single"
-                            selected={
-                              field.value ? new Date(field.value) : undefined
-                            }
-                            onSelect={(date) => {
-                              field.onChange(date?.toISOString() || undefined);
-                            }}
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </FormControl>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={
+                            field.value ? new Date(field.value) : undefined
+                          }
+                          onSelect={(date) =>
+                            field.onChange(date?.toISOString() || "")
+                          }
+                          disabled={(date) => date < new Date("1900-01-01")}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
 
+            {/* Tags */}
             <FormField
               control={form.control}
               name="tags"
@@ -253,13 +273,18 @@ export const CreateProjectDialog = ({
                 <FormItem>
                   <FormLabel>Tags</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Tags separated by comma" />
+                    <Input
+                      {...field}
+                      placeholder="design, mobile, urgent"
+                      className="h-10 sm:h-11"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
+            {/* Members Selection */}
             <FormField
               control={form.control}
               name="members"
@@ -268,92 +293,95 @@ export const CreateProjectDialog = ({
 
                 return (
                   <FormItem>
-                    <FormLabel>Members</FormLabel>
-                    <FormControl>
-                      <Popover>
-                        <PopoverTrigger asChild>
+                    <FormLabel>Team Members</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
                           <Button
-                            variant={"outline"}
-                            className="w-full justify-start text-left font-normal min-h-11"
+                            variant="outline"
+                            className="w-full justify-between h-auto min-h-10 sm:min-h-11 py-2 text-left font-normal"
                           >
-                            {selectedMembers.length === 0 ? (
-                              <span className="text-muted-foreground">
-                                Select Members
-                              </span>
-                            ) : selectedMembers.length <= 2 ? (
-                              selectedMembers.map((m) => {
-                                const member = workspaceMembers.find(
-                                  (wm) => wm.user._id === m.user
-                                );
-
-                                return `${member?.user.name} (${member?.role})`;
-                              })
-                            ) : (
-                              `${selectedMembers.length} members selected`
-                            )}
+                            <span className="truncate">
+                              {selectedMembers.length === 0
+                                ? "Select team members"
+                                : `${selectedMembers.length} member${selectedMembers.length > 1 ? "s" : ""} selected`}
+                            </span>
                           </Button>
-                        </PopoverTrigger>
-                        <PopoverContent
-                          className="w-full max-w-96 overflow-y-auto"
-                          align="start"
-                        >
-                          <div className="flex flex-col gap-2">
-                            {workspaceMembers.map((member) => {
-                              const selectedMember = selectedMembers.find(
-                                (m) => m.user === member.user._id
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        className="w-(--radix-popover-trigger-width) p-0 max-h-60 overflow-y-auto"
+                        align="start"
+                      >
+                        <div className="p-2 space-y-2">
+                          {workspaceMembers.length === 0 ? (
+                            <p className="text-sm text-muted-foreground text-center py-2">
+                              No members available
+                            </p>
+                          ) : (
+                            workspaceMembers.map((member) => {
+                              const isSelected = selectedMembers.some(
+                                (m) => m.user === member.user._id,
+                              );
+                              const selectedMemberData = selectedMembers.find(
+                                (m) => m.user === member.user._id,
                               );
 
                               return (
                                 <div
                                   key={member._id}
-                                  className="flex items-center gap-2 p-2 border rounded "
+                                  className={cn(
+                                    "flex items-center justify-between p-2 rounded-md border transition-colors",
+                                    isSelected
+                                      ? "bg-accent border-primary/30"
+                                      : "bg-card hover:bg-muted/50",
+                                  )}
                                 >
-                                  <Checkbox
-                                    checked={!!selectedMember}
-                                    onCheckedChange={(checked) => {
-                                      if (checked) {
-                                        field.onChange([
-                                          ...selectedMembers,
-                                          {
-                                            user: member.user._id,
-                                            role: "contributor",
-                                          },
-                                        ]);
-                                      } else {
-                                        field.onChange(
-                                          selectedMembers.filter(
-                                            (m) => m.user !== member.user._id
-                                          )
-                                        );
-                                      }
-                                    }}
-                                    id={`member-${member.user._id}`}
-                                  />
-                                  <span className="truncate flex-1">
-                                    {member.user.name}
-                                  </span>
+                                  <div className="flex items-center gap-2 overflow-hidden">
+                                    <Checkbox
+                                      id={`member-${member.user._id}`}
+                                      checked={isSelected}
+                                      onCheckedChange={(checked) => {
+                                        if (checked) {
+                                          field.onChange([
+                                            ...selectedMembers,
+                                            {
+                                              user: member.user._id,
+                                              role: "contributor",
+                                            },
+                                          ]);
+                                        } else {
+                                          field.onChange(
+                                            selectedMembers.filter(
+                                              (m) => m.user !== member.user._id,
+                                            ),
+                                          );
+                                        }
+                                      }}
+                                    />
+                                    <label
+                                      htmlFor={`member-${member.user._id}`}
+                                      className="text-sm truncate cursor-pointer select-none"
+                                    >
+                                      {member.user.name}
+                                    </label>
+                                  </div>
 
-                                  {selectedMember && (
+                                  {isSelected && (
                                     <Select
-                                      value={selectedMember.role}
+                                      value={selectedMemberData?.role}
                                       onValueChange={(role) => {
                                         field.onChange(
                                           selectedMembers.map((m) =>
                                             m.user === member.user._id
-                                              ? {
-                                                  ...m,
-                                                  role: role as
-                                                    | "contributor"
-                                                    | "manager"
-                                                    | "viewer",
-                                                }
-                                              : m
-                                          )
+                                              ? { ...m, role: role as any }
+                                              : m,
+                                          ),
                                         );
                                       }}
                                     >
-                                      <SelectTrigger>
-                                        <SelectValue placeholder="Select Role" />
+                                      <SelectTrigger className="h-7 w-28 text-xs">
+                                        <SelectValue />
                                       </SelectTrigger>
                                       <SelectContent>
                                         <SelectItem value="manager">
@@ -370,20 +398,39 @@ export const CreateProjectDialog = ({
                                   )}
                                 </div>
                               );
-                            })}
-                          </div>
-                        </PopoverContent>
-                      </Popover>
-                    </FormControl>
+                            })
+                          )}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
                     <FormMessage />
                   </FormItem>
                 );
               }}
             />
 
-            <DialogFooter>
-              <Button type="submit" disabled={isPending}>
-                {isPending ? "Creating..." : "Create Project"}
+            <DialogFooter className="pt-4 gap-2 sm:gap-0">
+              <Button
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                type="button"
+                className="w-full sm:w-auto mt-2 sm:mt-0"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isPending}
+                className="w-full sm:w-auto"
+              >
+                {isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  "Create Project"
+                )}
               </Button>
             </DialogFooter>
           </form>
