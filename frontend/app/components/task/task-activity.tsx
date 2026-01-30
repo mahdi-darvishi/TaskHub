@@ -30,7 +30,7 @@ export const TaskActivity = ({ resourceId }: { resourceId: string }) => {
         </span>
       </div>
 
-      <div className="space-y-4 max-h-[350px] sm:max-h-[375px] overflow-y-auto pr-2 custom-scrollbar">
+      <div className="space-y-4 max-h-[250px] sm:max-h-[375px] overflow-y-auto pr-2 custom-scrollbar">
         {!data || data.length === 0 ? (
           <p className="text-center text-sm text-muted-foreground py-8">
             No activity recorded yet.
